@@ -280,8 +280,6 @@ com/sun/jdi/sde/SourceDebugExtensionTest.java                   8158066 windows-
 
 # jdk_util
 
-java/util/BitSet/BitSetStreamTest.java                          8079538 generic-all
-
 ############################################################################
 
 # jdk_instrument
@@ -307,5 +305,8 @@ com/sun/jndi/ldap/DeadSSLLdapTimeoutTest.java                   8169942 linux-i5
 javax/rmi/PortableRemoteObject/8146975/RmiIiopReturnValueTest.java 8169737 linux-all
 
 org/omg/CORBA/OrbPropertiesTest.java			        8175177 generic-all
+
+sample/mergesort/MergeSortTest.java				8178912 generic-all
+sample/chatserver/ChatTest.java					8178912 generic-all
 
 ############################################################################
