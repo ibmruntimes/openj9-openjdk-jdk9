@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,26 +24,8 @@
  */
 
 /**
- * Defines the Language Model, Annotation Processing, and Java Compiler APIs.
- * <p>
- * These APIs model declarations and types of the Java programming language,
- * and define interfaces for tools such as compilers which can be invoked
- * from a program.
- * <p>
- * This module is upgradeble.
- *
- * @moduleGraph
- * @since 9
+ * This package provides a legacy entry point for the <em>javac</em> tool.
+ * See the <a href="{@docRoot}/jdk.compiler-summary.html">{@code jdk.compiler}</a>
+ * module for details on replacement APIs.
  */
-module java.compiler {
-    exports javax.annotation.processing;
-    exports javax.lang.model;
-    exports javax.lang.model.element;
-    exports javax.lang.model.type;
-    exports javax.lang.model.util;
-    exports javax.tools;
-
-    uses javax.tools.DocumentationTool;
-    uses javax.tools.JavaCompiler;
-}
-
+package com.sun.tools.javac;
