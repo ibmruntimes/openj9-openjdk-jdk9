@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2015, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -156,12 +162,12 @@ public class GenModuleInfoSource {
             }
 
             // requires
-            for (String l : lines) {
-                if (l.trim().startsWith("requires"))
-                    writer.println(l);
-            }
+            //for (String l : lines) {
+            //    if (l.trim().startsWith("requires"))
+            //        writer.println(l);
+            //}
 
-            // write exports, opens, uses, and provides
+            // write requires, exports, opens, uses, and provides
             moduleInfo.print(writer);
 
             // close
@@ -171,12 +177,13 @@ public class GenModuleInfoSource {
 
 
     class ModuleInfo {
+        final Map<String, Statement> requires = new HashMap<>();
         final Map<String, Statement> exports = new HashMap<>();
         final Map<String, Statement> opens = new HashMap<>();
         final Map<String, Statement> uses = new HashMap<>();
         final Map<String, Statement> provides = new HashMap<>();
 
-        Statement getStatement(String directive, String name) {
+        Statement getStatement(String directive, String qualifier, String name) {
             switch (directive) {
                 case "exports":
                     if (moduleInfo.exports.containsKey(name) &&
@@ -204,6 +211,10 @@ public class GenModuleInfoSource {
                 case "uses":
                     return uses.computeIfAbsent(name,
                         _n -> new Statement("uses", "", name));
+
+                case "requires":
+                    return uses.computeIfAbsent(name,
+                        _n -> new Statement("requires", qualifier, name));
 
                 case "provides":
                     return provides.computeIfAbsent(name,
@@ -233,7 +244,7 @@ public class GenModuleInfoSource {
                 .stream()
                 .filter(e -> !exports.containsKey(e.getKey()) &&
                                 e.getValue().filter(modules))
-                .forEach(e -> addTargets(getStatement("exports", e.getKey()),
+                .forEach(e -> addTargets(getStatement("exports", null, e.getKey()),
                                          e.getValue(),
                                          modules));
 
@@ -251,7 +262,7 @@ public class GenModuleInfoSource {
                 .stream()
                 .filter(e -> !opens.containsKey(e.getKey()) &&
                                 e.getValue().filter(modules))
-                .forEach(e -> addTargets(getStatement("opens", e.getKey()),
+                .forEach(e -> addTargets(getStatement("opens", null, e.getKey()),
                                          e.getValue(),
                                          modules));
 
@@ -272,6 +283,12 @@ public class GenModuleInfoSource {
                 .stream()
                 .filter(service -> !uses.containsKey(service))
                 .forEach(service -> uses.put(service, extraFiles.uses.get(service)));
+
+            // requires
+            extraFiles.requires.keySet()
+                .stream()
+                .filter(require -> !requires.containsKey(require))
+                .forEach(require -> requires.put(require, extraFiles.requires.get(require)));
         }
 
         // add qualified exports or opens to known modules only
@@ -324,6 +341,11 @@ public class GenModuleInfoSource {
 
 
         void print(PrintWriter writer) {
+            // requires
+            requires.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> writer.println(e.getValue()));
+
             // print unqualified exports
             exports.entrySet().stream()
                 .filter(e -> e.getValue().targets.isEmpty())
@@ -418,27 +440,45 @@ public class GenModuleInfoSource {
                     String keyword = s[0].trim();
 
                     String name = s.length > 1 ? s[1].trim() : null;
+                    String requiresModifiedName1 = s.length > 2 ? s[2].trim() : null;
+                    String requiresModifiedName2 = s.length > 3 ? s[3].trim() : null;
                     trace("%d: %s index=%d len=%d%n", lineNumber, l, index, l.length());
                     switch (keyword) {
                         case "module":
-                        case "requires":
                         case "}":
                             index = l.length();  // skip to the end
                             continue;
 
+                        case "requires":
                         case "exports":
                         case "opens":
                         case "provides":
                         case "uses":
+                            String requiresQualifier = null;
                             // assume name immediately after exports, opens, provides, uses
-                            statement = getStatement(keyword, name);
+                            if (keyword.equals("requires")) {
+                               if (requiresModifiedName2 != null) { // 2 modifiers specified
+                                   if ((name.equals("transitive") || name.equals("static")) &&
+                                       (requiresModifiedName1.equals("transitive") || requiresModifiedName1.equals("static"))) {
+                                       requiresQualifier = "static transitive";
+                                       name = requiresModifiedName2;
+                                   }
+                               } else if (requiresModifiedName1 != null) { // 1 modifier specified
+                                   if (name.equals("transitive") || name.equals("static")) {
+                                       requiresQualifier = name;
+                                       name = requiresModifiedName1;
+                                   }
+                               }
+                            }
+
+                            statement = getStatement(keyword, requiresQualifier, name);
                             hasTargets = false;
 
                             int i = l.indexOf(name, keyword.length()+1) + name.length() + 1;
                             l = i < l.length() ? l.substring(i, l.length()).trim() : "";
                             index = 0;
 
-                            if (s.length >= 3) {
+                            if (!keyword.equals("requires") && s.length >= 3) {
                                 if (!s[2].trim().equals(statement.qualifier)) {
                                     throw new RuntimeException(sourcefile + ", line " +
                                         lineNumber + ", is malformed: " + s[2]);
@@ -594,17 +634,25 @@ public class GenModuleInfoSource {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder("    ");
-            sb.append(directive).append(" ").append(name);
-            if (targets.isEmpty()) {
-                sb.append(";");
-            } else if (targets.size() == 1) {
-                sb.append(" ").append(qualifier)
-                  .append(orderedTargets().collect(joining(",", " ", ";")));
+            if (directive.equals("requires")) {
+               if (qualifier != null) {
+                  sb.append(directive).append(" ").append(qualifier).append(" ").append(name).append(";");
+               } else {
+                  sb.append(directive).append(" ").append(name).append(";");
+               }
             } else {
-                sb.append(" ").append(qualifier)
-                  .append(orderedTargets()
-                      .map(target -> String.format("        %s", target))
-                      .collect(joining(",\n", "\n", ";")));
+               sb.append(directive).append(" ").append(name);
+               if (targets.isEmpty()) {
+                   sb.append(";");
+               } else if (targets.size() == 1) {
+                   sb.append(" ").append(qualifier)
+                     .append(orderedTargets().collect(joining(",", " ", ";")));
+               } else {
+                   sb.append(" ").append(qualifier)
+                     .append(orderedTargets()
+                         .map(target -> String.format("        %s", target))
+                         .collect(joining(",\n", "\n", ";")));
+               }
             }
             return sb.toString();
         }

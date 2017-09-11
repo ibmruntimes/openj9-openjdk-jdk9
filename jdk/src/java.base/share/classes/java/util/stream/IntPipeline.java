@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2012, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -411,10 +417,33 @@ abstract class IntPipeline<E_IN>
     }
 
     // Terminal ops from IntStream
+    private static boolean ibmTryGPU = false;
+    protected static native void promoteGPUCompile();
 
     @Override
     public void forEach(IntConsumer action) {
-        evaluate(ForEachOps.makeInt(action, false));
+    	boolean instanceOfRangeIntSpliterator = getSourceSpliterator() instanceof Streams.RangeIntSpliterator;
+    	if (instanceOfRangeIntSpliterator) {
+    		Streams.RangeIntSpliterator intRange = (Streams.RangeIntSpliterator)getSourceSpliterator();
+    		int last = intRange.upTo;
+    		if  (intRange.upTo != Integer.MAX_VALUE && intRange.last == 1){
+    			last = intRange.upTo + 1;
+    		}
+    		// ibmTryGPU will be set at runtime by the JIT via the -Xjit:enableGPU option
+    		if (ibmTryGPU) {
+    			for (int i = intRange.from; i < last; i++){
+    				action.accept(i);
+    			}
+    			if (intRange.upTo == Integer.MAX_VALUE && intRange.last == 1){
+    				action.accept(Integer.MAX_VALUE);
+    			}
+    			return;
+    		}
+    	}             
+    	evaluate(ForEachOps.makeInt(action, false));
+    	if (instanceOfRangeIntSpliterator){
+    		promoteGPUCompile();
+    	}
     }
 
     @Override

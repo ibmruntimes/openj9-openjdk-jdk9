@@ -365,6 +365,13 @@ AC_DEFUN_ONCE([LIB_SETUP_FREETYPE],
 
           if test "x$FOUND_FREETYPE" != xyes; then
             FREETYPE_BASE_DIR="$SYSROOT/usr"
+            if test "x$OPENJDK_TARGET_CPU_ARCH" = xs390; then
+              LIB_CHECK_POTENTIAL_FREETYPE([$FREETYPE_BASE_DIR/include], [$FREETYPE_BASE_DIR/lib/s390x-linux-gnu], [well-known location])
+            fi
+          fi
+
+          if test "x$FOUND_FREETYPE" != xyes; then
+            FREETYPE_BASE_DIR="$SYSROOT/usr"
             if test "x$OPENJDK_TARGET_CPU_BITS" = x64; then
               LIB_CHECK_POTENTIAL_FREETYPE([$FREETYPE_BASE_DIR/include], [$FREETYPE_BASE_DIR/lib/x86_64-linux-gnu], [well-known location])
             else

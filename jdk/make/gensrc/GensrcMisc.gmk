@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2011, 2017 All Rights Reserved
+#
 # Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -26,7 +28,6 @@
 ################################################################################
 # Install the launcher name, release version string, full version
 # string and the runtime name into the VersionProps.java file.
-
 $(eval $(call SetupTextFileProcessing, BUILD_VERSION_JAVA, \
     SOURCE_FILES := $(JDK_TOPDIR)/src/java.base/share/classes/java/lang/VersionProps.java.template, \
     OUTPUT_FILE := $(SUPPORT_OUTPUTDIR)/gensrc/java.base/java/lang/VersionProps.java, \
@@ -38,7 +39,9 @@ $(eval $(call SetupTextFileProcessing, BUILD_VERSION_JAVA, \
         @@VERSION_NUMBER@@ => $(VERSION_NUMBER) ; \
         @@VERSION_PRE@@ => $(VERSION_PRE) ; \
         @@VERSION_BUILD@@ => $(VERSION_BUILD) ; \
-        @@VERSION_OPT@@ => $(VERSION_OPT), \
+        @@VERSION_OPT@@ => $(VERSION_OPT) ; \
+        @@OPENJDK_SHA@@ => $(OPENJDK_SHA) ; \
+        @@OPENJDK_TAG@@ => $(OPENJDK_TAG), \
 ))
 
 GENSRC_JAVA_BASE += $(BUILD_VERSION_JAVA)

@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2011, 2017 All Rights Reserved
+#
 # Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -33,7 +35,7 @@ include GensrcCharsetMapping.gmk
 include GensrcCharsetCoder.gmk
 include GensrcBuffer.gmk
 include GensrcExceptions.gmk
-include GensrcVarHandles.gmk
+#include GensrcVarHandles.gmk
 include GensrcModuleLoaderMap.gmk
 
 ################################################################################

@@ -1,0 +1,23 @@
+# ===========================================================================
+# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# ===========================================================================
+# 
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.  
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
+# 
+# ===========================================================================
+
+COMPANY_NAME := Eclipse OpenJ9
+OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
+OPENJ9_SHA  := $(shell git -C $(OPENJ9_TOPDIR)  rev-parse --short HEAD)
+SOURCE_REVISION = OpenJDK:$(OPENJDK_SHA) OpenJ9:$(OPENJ9_SHA) OMR:$(OPENJ9OMR_SHA)

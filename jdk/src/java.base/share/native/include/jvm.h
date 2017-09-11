@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 1997, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 1997, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -116,6 +122,16 @@ JVM_InitProperties(JNIEnv *env, jobject p);
 
 
 /*
+ * java.util.zip.ZipFile                                                        //IBM-use_j9
+ */                                                                             //IBM-use_j9
+#define JVM_ZIP_HOOK_STATE_OPEN 1                                               //IBM-use_j9
+#define JVM_ZIP_HOOK_STATE_CLOSED 2                                             //IBM-use_j9
+                                                                                //IBM-use_j9
+JNIEXPORT void JNICALL                                                          //IBM-use_j9
+JVM_ZipHook(JNIEnv *env, const char* filename, jint newState);                  //IBM-use_j9
+                                                                                //IBM-use_j9
+                                                                                //IBM-use_j9
+/*                                                                              //IBM-use_j9
  * java.lang.Runtime
  */
 JNIEXPORT void JNICALL

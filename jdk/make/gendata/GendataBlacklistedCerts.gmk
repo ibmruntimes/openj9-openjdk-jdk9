@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2014, 2017 All Rights Reserved
+#
 # Copyright (c) 2014, 2016, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -33,4 +35,4 @@ $(GENDATA_BLACKLISTED_CERTS): $(BUILD_TOOLS) $(GENDATA_BLACKLISTED_CERTS_SRC)
 	$(call MakeDir, $(@D))
 	($(CAT) $(GENDATA_BLACKLISTED_CERTS_SRC) | $(TOOL_BLACKLISTED_CERTS) > $@) || exit 1
 
-TARGETS += $(GENDATA_BLACKLISTED_CERTS)
+#TARGETS += $(GENDATA_BLACKLISTED_CERTS)

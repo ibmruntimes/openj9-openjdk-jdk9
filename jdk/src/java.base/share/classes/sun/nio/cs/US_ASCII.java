@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2000, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2000, 2004, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -79,18 +85,24 @@ public class US_ASCII
             dp = (dp <= dl ? dp : dl);
 
             try {
-                while (sp < sl) {
-                    byte b = sa[sp];
-                    if (b >= 0) {
-                        if (dp >= dl)
-                            return CoderResult.OVERFLOW;
-                        da[dp++] = (char)b;
-                        sp++;
-                        continue;
-                    }
-                    return CoderResult.malformedForLength(1);
-                }
-                return CoderResult.UNDERFLOW;
+            	
+                if((dl-dp) >= (sl-sp)) {                                             //IBM-perf_converter
+                    
+                    int n = decodeASCII(sa, sp, sl-sp, da, dp);
+                    sp = sp + n;
+                    dp = dp + n;
+                    if (sp<sl)
+                     	return CoderResult.malformedForLength(1);
+                    return CoderResult.UNDERFLOW;                            //IBM-perf_converter
+                }                                                               //IBM-perf_converter
+                else {                                                           //IBM-perf_converter
+                    int n = decodeASCII(sa, sp, dl-dp, da, dp);
+                    sp = sp + n;
+                    dp = dp + n;
+                    if (dp<dl)
+                    	return CoderResult.malformedForLength(1);
+                    return CoderResult.OVERFLOW;                         //IBM-perf_converter
+                }                                                                //IBM-perf_converter
             } finally {
                 src.position(sp - src.arrayOffset());
                 dst.position(dp - dst.arrayOffset());
@@ -137,13 +149,35 @@ public class US_ASCII
             int dp = 0;
             len = Math.min(len, dst.length);
             while (dp < len) {
-                byte b = src[sp++];
-                if (b >= 0)
-                    dst[dp++] = (char)b;
-                else
-                    dst[dp++] = repl;
+               int n = decodeASCII(src, sp, len-dp, dst, dp);
+               sp = sp+n;
+               dp = dp+n;
+               if (dp < len) //b was bad
+               {
+                       byte b = src[sp++];
+                       dst[dp++] = repl;              
+               }       
             }
             return dp;
+        }
+
+        public final int decodeASCII(byte[] src, int sp, int len, char[] dst, int dp) {
+            int n = 0;
+            while (n < len) 
+               {
+                byte b = src[sp++];
+
+                if (b >= 0){
+            
+                    dst[dp++] = (char)b;
+                    n++;
+                    continue;
+                       }
+                break;   
+                
+               }
+            
+            return n;
         }
 
         public boolean isASCIICompatible() {
@@ -183,20 +217,38 @@ public class US_ASCII
             dp = (dp <= dl ? dp : dl);
 
             try {
-                while (sp < sl) {
-                    char c = sa[sp];
-                    if (c < 0x80) {
-                        if (dp >= dl)
-                            return CoderResult.OVERFLOW;
-                        da[dp] = (byte)c;
-                        sp++; dp++;
-                        continue;
+                if((dl-dp) >= (sl-sp)) {                                             //IBM-perf_converter
+                    
+                    int n = encodeASCII(sa,sp,sl-sp,da,dp);
+                    sp = sp+n;
+                    dp = dp+n;
+
+                    if (sp<sl)
+                    {
+                        char c = sa[sp];
+                        if (sgp.parse(c, sa, sp, sl) < 0) {                 //IBM-perf_converter
+                            return sgp.error();                                  //IBM-perf_converter
+                        }                                                //IBM-perf_converter
+                        else return sgp.unmappableResult();              //IBM-perf_converter
                     }
-                    if (sgp.parse(c, sa, sp, sl) < 0)
-                        return sgp.error();
-                    return sgp.unmappableResult();
+
+                    return CoderResult.UNDERFLOW;                            //IBM-perf_converter
+                }                                                                        //IBM-perf_converter
+                else {                                                               //IBM-perf_converter
+                    int n = encodeASCII(sa,sp,dl-dp,da,dp);
+                    sp = sp+n;
+                    dp = dp+n;
+                    if (dp<dl)
+                    {
+                        char c = sa[sp];
+                        if (sgp.parse(c, sa, sp, sl) < 0) {                 //IBM-perf_converter
+                               return sgp.error();                              //IBM-perf_converter
+                           }                                                        //IBM-perf_converter
+                        else return sgp.unmappableResult();                  //IBM-perf_converter
+                    }
+
+                    return CoderResult.OVERFLOW;                                     //IBM-perf_converter
                 }
-                return CoderResult.UNDERFLOW;
             } finally {
                 src.position(sp - src.arrayOffset());
                 dst.position(dp - dst.arrayOffset());
@@ -245,23 +297,42 @@ public class US_ASCII
             int dp = 0;
             int sl = sp + Math.min(len, dst.length);
             while (sp < sl) {
-                char c = src[sp++];
-                if (c < 0x80) {
-                    dst[dp++] = (byte)c;
-                    continue;
-                }
-                if (Character.isHighSurrogate(c) && sp < sl &&
-                    Character.isLowSurrogate(src[sp])) {
-                    if (len > dst.length) {
-                        sl++;
-                        len--;
+               int n = encodeASCII(src,sp,sl-sp,dst,dp);
+                sp = sp+n;
+                dp = dp+n;
+
+                if (sp < sl) //c was bad
+                {
+                   char c = src[sp++];
+                
+                    if ( Character.isHighSurrogate(c) && sp < sl &&
+                        Character.isLowSurrogate(src[sp])) {
+                        if (len > dst.length) {
+                            sl++;
+                            len--;
+                        }
+                        sp++;
                     }
-                    sp++;
-                }
-                dst[dp++] = repl;
+
+                    dst[dp++] = repl;
+                 }
             }
             return dp;
         }
+
+        public final int encodeASCII(char[] src, int sp, int len, byte[] dst, int dp) {
+            int n = 0;
+            while (n < len) {
+               char c = src[sp++];
+               if (c < 0x80) {
+                   dst[dp++] = (byte)c;
+                   n++;
+                   continue;
+               }
+               break;
+            }
+           return n;
+         }
 
         public boolean isASCIICompatible() {
             return true;

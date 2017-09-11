@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2015, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -37,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.CodeSigner;
 import java.security.CodeSource;
@@ -59,10 +66,17 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
+
 import jdk.internal.misc.VM;
 import jdk.internal.module.ModulePatcher.PatchedModuleReader;
 import jdk.internal.module.SystemModules;
 import jdk.internal.module.Resources;
+import java.nio.file.Files;											//IBM-shared_classes_misc
+import java.nio.file.Path;											//IBM-shared_classes_misc
+import java.nio.file.Paths;											//IBM-shared_classes_misc
+import java.util.function.IntConsumer;								//IBM-shared_classes_misc
+import java.util.ServiceLoader;										//IBM-shared_classes_misc
+import com.ibm.sharedclasses.spi.SharedClassProvider; 				//IBM-shared_classes_misc
 
 
 /**
@@ -106,7 +120,147 @@ public class BuiltinClassLoader
     // the URL class path or null if there is no class path
     private final URLClassPath ucp;
 
+    // Private member fields used for Shared classes                          		//IBM-shared_classes_misc
+    private static URL jimageURL;													//IBM-shared_classes_misc
+    private SharedClassProvider sharedClassServiceProvider ;						//IBM-shared_classes_misc
+    private SharedClassMetaDataCache sharedClassMetaDataCache;                 		//IBM-shared_classes_misc
+    																				//IBM-shared_classes_misc
+    /*                                                                           	//IBM-shared_classes_misc
+     * Wrapper class for maintaining the index of where the metadata (codesource and manifest)  //IBM-shared_classes_misc
+     * is found - used only in Shared classes context.                           	//IBM-shared_classes_misc
+     */                                                                          	//IBM-shared_classes_misc
+    private static class SharedClassIndexHolder {  								 	//IBM-shared_classes_misc
+        int index;                                                              	//IBM-shared_classes_misc
+    																				//IBM-shared_classes_misc
+        public void setIndex(int index) {                                        	//IBM-shared_classes_misc
+            this.index = index;                                                  	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+    }                                                                            	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+    /*                                                                           	//IBM-shared_classes_misc
+     * Wrapper class for internal storage of metadata (codesource and manifest) associated with   //IBM-shared_classes_misc
+     * shared class - used only in Shared classes context.                       	//IBM-shared_classes_misc
+     */                                                                          	//IBM-shared_classes_misc
+    private class SharedClassMetaData {                                          	//IBM-shared_classes_misc
+        private CodeSource codeSource;                                           	//IBM-shared_classes_misc
+        private Manifest manifest;                                               	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+        SharedClassMetaData(CodeSource codeSource, Manifest manifest) {          	//IBM-shared_classes_misc
+            this.codeSource = codeSource;                                        	//IBM-shared_classes_misc
+            this.manifest = manifest;                                            	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+        public CodeSource getCodeSource() { return codeSource; }                 	//IBM-shared_classes_misc
+        public Manifest getManifest() { return manifest; }                       	//IBM-shared_classes_misc
+    }                                                                            	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+    /*                                                                           	//IBM-shared_classes_misc
+     * Represents a collection of SharedClassMetaData objects retrievable by     	//IBM-shared_classes_misc
+     * index.                                                                    	//IBM-shared_classes_misc
+     */                                                                          	//IBM-shared_classes_misc
+    private class SharedClassMetaDataCache {                                   	//IBM-shared_classes_misc
+        private final static int BLOCKSIZE = 10;                                 	//IBM-shared_classes_misc
+        private SharedClassMetaData[] store;                                     	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+        public SharedClassMetaDataCache(int initialSize) {                       	//IBM-shared_classes_misc
+            // Allocate space for an initial amount of metadata entries				//IBM-shared_classes_misc
+            store = new SharedClassMetaData[initialSize];                        	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+        /**                                                                      	//IBM-shared_classes_misc
+         * Retrieves the SharedClassMetaData stored at the given index, or null  	//IBM-shared_classes_misc
+         * if no SharedClassMetaData was previously stored at the given index    	//IBM-shared_classes_misc
+         * or the index is out of range.                                         	//IBM-shared_classes_misc
+         */                                                                      	//IBM-shared_classes_misc
+        public synchronized SharedClassMetaData getSharedClassMetaData(int index) { //IBM-shared_classes_misc
+            if (index < 0 || store.length < (index+1)) {                         	//IBM-shared_classes_misc
+                return null;                                                     	//IBM-shared_classes_misc
+            }                                                                    	//IBM-shared_classes_misc
+            return store[index];                                                 	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+        /**                                                                      	//IBM-shared_classes_misc
+         * Stores the supplied SharedClassMetaData at the given index in the     	//IBM-shared_classes_misc
+         * store. The store will be grown to contain the index if necessary.     	//IBM-shared_classes_misc
+         */                                                                      	//IBM-shared_classes_misc
+        public synchronized void setSharedClassMetaData(int index,               	//IBM-shared_classes_misc
+                                                     SharedClassMetaData data) {  	//IBM-shared_classes_misc
+            ensureSize(index);                                                   	//IBM-shared_classes_misc
+            store[index] = data;                                                 	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+																					//IBM-shared_classes_misc
+        // Ensure that the store can hold at least index number of entries    		//IBM-shared_classes_misc
+        private synchronized void ensureSize(int index) {                        	//IBM-shared_classes_misc
+            if (store.length < (index+1)) {                                      	//IBM-shared_classes_misc
+                int newSize = (index+BLOCKSIZE);                                 	//IBM-shared_classes_misc
+                SharedClassMetaData[] newSCMDS = new SharedClassMetaData[newSize];  //IBM-shared_classes_misc
+                System.arraycopy(store, 0, newSCMDS, 0, store.length);           	//IBM-shared_classes_misc
+                store = newSCMDS;                                                	//IBM-shared_classes_misc
+            }                                                                    	//IBM-shared_classes_misc
+        }                                                                        	//IBM-shared_classes_misc
+    }
+	
+	/*                                                                           	//IBM-shared_classes_misc
+	 * Initialize support for shared classes.                                    	//IBM-shared_classes_misc
+	 */																				//IBM-shared_classes_misc
+	public synchronized void initializeSharedClassesSupport() {						//IBM-shared_classes_misc
+		int ucpLength = 0;															//IBM-shared_classes_misc
+		if (isSharedClassesEnabled() 													//IBM-shared_classes_miscs
+			&& (null == sharedClassServiceProvider)										//IBM-shared_classes_misc
+		) {																				//IBM-shared_classes_misc
+			URL[] initialClassPath = null;												//IBM-shared_classes_misc
+			if (ucp != null) {															//IBM-shared_classes_misc
+				initialClassPath = ucp.getURLs();										//IBM-shared_classes_misc
+				ucpLength = initialClassPath.length;									//IBM-shared_classes_misc
+			}																			//IBM-shared_classes_misc
+			ServiceLoader<SharedClassProvider> sl = ServiceLoader.load(SharedClassProvider.class);	//IBM-shared_classes_misc
+			for (SharedClassProvider p : sl) {														//IBM-shared_classes_misc
+				if (null != p) {																	//IBM-shared_classes_misc
+					if (null != p.initializeProvider(this, initialClassPath, true, true)){			//IBM-shared_classes_misc
+						sharedClassServiceProvider = p;												//IBM-shared_classes_misc
+						if (null != ucp) {															//IBM-shared_classes_misc
+							ucp.setSharedClassProvider(sharedClassServiceProvider);					//IBM-shared_classes_misc
+						}																			//IBM-shared_classes_misc
+						break;																		//IBM-shared_classes_misc
+					}																				//IBM-shared_classes_misc
+				}																					//IBM-shared_classes_misc
+			}																						//IBM-shared_classes_misc
+		}																							//IBM-shared_classes_misc
+		
+		if (usingSharedClasses() && null == sharedClassMetaDataCache) {            					//IBM-shared_classes_misc
+			// Create a metadata cache                                   							//IBM-shared_classes_misc
+			sharedClassMetaDataCache = new SharedClassMetaDataCache(ucpLength);  					//IBM-shared_classes_misc
+		}                                                                    						//IBM-shared_classes_misc
+	}                                																//IBM-shared_classes_misc
+    /*                                                                          					//IBM-shared_classes_misc
+     * Return true if shared classes support is active, otherwise false.         					//IBM-shared_classes_misc
+     */                                                                          					//IBM-shared_classes_misc
+    private boolean usingSharedClasses() {                                       					//IBM-shared_classes_misc
+        return (sharedClassServiceProvider != null);         										//IBM-shared_classes_misc
+    }
+	
+    /*                                                                          				//IBM-shared_classes_misc
+     * Returns if -Xshareclasses is used in the command line         							//IBM-shared_classes_misc
+     */  																						//IBM-shared_classes_misc
+    private static boolean isSharedClassesEnabled() {											//IBM-shared_classes_misc
+    	return AccessController.doPrivileged((PrivilegedAction<Boolean>) ()						//IBM-shared_classes_misc
+    			-> Boolean.getBoolean("com.ibm.oti.shared.enabled"));							//IBM-shared_classes_misc
+   	}																							//IBM-shared_classes_misc
 
+    /*                                                                          					//IBM-shared_classes_misc
+     * Gets the URL of the jimage file         														//IBM-shared_classes_misc
+     */  																							//IBM-shared_classes_misc
+	private static void setJimageURL() {															//IBM-shared_classes_misc
+		String javaHome = AccessController.doPrivileged((PrivilegedAction<String>) () -> {		//IBM-shared_classes_misc
+			return System.getProperty("java.home");												//IBM-shared_classes_misc
+		});																						//IBM-shared_classes_misc
+		Path p = Paths.get(javaHome, "lib", "modules");											//IBM-shared_classes_misc
+		if (Files.isRegularFile(p)) {															//IBM-shared_classes_misc
+			try {																				//IBM-shared_classes_misc
+				jimageURL = p.toUri().toURL();													//IBM-shared_classes_misc
+			} catch (MalformedURLException e) {}												//IBM-shared_classes_misc
+		}																						//IBM-shared_classes_misc
+	}																							//IBM-shared_classes_misc
+    
     /**
      * A module defined/loaded by a built-in class loader.
      *
@@ -117,6 +271,7 @@ public class BuiltinClassLoader
         private final BuiltinClassLoader loader;
         private final ModuleReference mref;
         private final URL codeSourceURL;          // may be null
+		private final URL fileURL;																//IBM-shared_classes_misc
 
         LoadedModule(BuiltinClassLoader loader, ModuleReference mref) {
             URL url = null;
@@ -128,12 +283,25 @@ public class BuiltinClassLoader
             this.loader = loader;
             this.mref = mref;
             this.codeSourceURL = url;
+			this.fileURL = convertJrtToFileURL();												//IBM-shared_classes_misc
         }
 
         BuiltinClassLoader loader() { return loader; }
         ModuleReference mref() { return mref; }
         String name() { return mref.descriptor().name(); }
         URL codeSourceURL() { return codeSourceURL; }
+		URL fileURL() {return fileURL;}
+		URL convertJrtToFileURL() {																//IBM-shared_classes_misc
+			if (null == jimageURL) {															//IBM-shared_classes_misc
+			   setJimageURL();																	//IBM-shared_classes_misc
+			}																					//IBM-shared_classes_misc
+			if (null != jimageURL) {															//IBM-shared_classes_misc
+				if (codeSourceURL.getProtocol().equals("jrt")) {								//IBM-shared_classes_misc
+					return jimageURL;															//IBM-shared_classes_misc
+				}																				//IBM-shared_classes_misc
+			}																					//IBM-shared_classes_misc
+			return this.codeSourceURL;															//IBM-shared_classes_misc
+		}																						//IBM-shared_classes_misc
     }
 
 
@@ -426,6 +594,9 @@ public class BuiltinClassLoader
         // only cache resources after VM is fully initialized
         if (VM.isModuleSystemInited()) {
             map.putIfAbsent(name, urls);
+        } else {
+        	if (urls == null)
+                urls = Collections.emptyList();
         }
 
         return urls;
@@ -603,7 +774,7 @@ public class BuiltinClassLoader
                     BuiltinClassLoader loader = loadedModule.loader();
                     if (loader == this) {
                         if (VM.isModuleSystemInited()) {
-                            c = findClassInModuleOrNull(loadedModule, cn);
+								c = findClassInModuleOrNull(loadedModule, cn);
                         }
                     } else {
                         // delegate to the other loader
@@ -677,9 +848,20 @@ public class BuiltinClassLoader
      * @return the resulting Class or {@code null} if not found
      */
     private Class<?> findClassInModuleOrNull(LoadedModule loadedModule, String cn) {
+		Class<?> c = null;												//IBM-shared_classes_misc
+		ModuleReader reader = moduleReaderFor(loadedModule.mref());		//IBM-shared_classes_misc
+		if (!(reader instanceof PatchedModuleReader)) {					//IBM-shared_classes_misc
+			c = findClassInSharedClassesCache(cn, loadedModule, false);	//IBM-shared_classes_misc												
+		}																//IBM-shared_classes_misc
+		if (null != c) {												//IBM-shared_classes_misc
+			return c;													//IBM-shared_classes_misc
+		}																//IBM-shared_classes_misc
+
         if (System.getSecurityManager() == null) {
+
             return defineClass(cn, loadedModule);
         } else {
+
             PrivilegedAction<Class<?>> pa = () -> defineClass(cn, loadedModule);
             return AccessController.doPrivileged(pa);
         }
@@ -691,6 +873,11 @@ public class BuiltinClassLoader
      * @return the resulting Class or {@code null} if not found
      */
     private Class<?> findClassOnClassPathOrNull(String cn) {
+		Class<?> c = findClassInSharedClassesCache(cn, null, true);		//IBM-shared_classes_misc
+		if (null != c) {												//IBM-shared_classes_misc
+			return c;													//IBM-shared_classes_misc
+		}																//IBM-shared_classes_misc
+
         String path = cn.replace('.', '/').concat(".class");
         if (System.getSecurityManager() == null) {
             Resource res = ucp.getResource(path, false);
@@ -720,6 +907,75 @@ public class BuiltinClassLoader
             return AccessController.doPrivileged(pa);
         }
     }
+    
+	 /**																											//IBM-shared_classes_misc
+     * Finds the class with the specified binary name in the shared classes cache.									//IBM-shared_classes_misc
+     *																												//IBM-shared_classes_misc
+     * @return the resulting Class or {@code null} if not found														//IBM-shared_classes_misc
+     */																												//IBM-shared_classes_misc
+	private Class<?> findClassInSharedClassesCache(String cn, LoadedModule module, boolean pkgCheck) {				//IBM-shared_classes_misc
+		if (usingSharedClasses()) {																					//IBM-shared_classes_misc
+			byte[] sharedClazz = null;																				//IBM-shared_classes_misc
+			CodeSource cs = null;																					//IBM-shared_classes_misc
+			Manifest man = null;																					//IBM-shared_classes_misc
+			boolean defineClass = false;																			//IBM-shared_classes_misc
+			if (null == module) {																					//IBM-shared_classes_misc
+				SharedClassIndexHolder sharedClassIndexHolder = new SharedClassIndexHolder(); 						//IBM-shared_classes_misc
+				IntConsumer consumer = (i)->sharedClassIndexHolder.setIndex(i); 									//IBM-shared_classes_misc
+				sharedClazz = sharedClassServiceProvider.findSharedClassURLClasspath(cn, consumer); 				//IBM-shared_classes_misc
+				if (sharedClazz != null) {                                      									//IBM-shared_classes_misc
+					int indexFoundData = sharedClassIndexHolder.index;          									//IBM-shared_classes_misc
+					SharedClassMetaData metadata = sharedClassMetaDataCache.getSharedClassMetaData(indexFoundData); //IBM-shared_classes_misc
+					if (metadata != null) {   																		//IBM-shared_classes_misc
+						cs = metadata.getCodeSource();																//IBM-shared_classes_misc
+						man = metadata.getManifest();																//IBM-shared_classes_misc
+						defineClass = true;																			//IBM-shared_classes_misc
+					} 																								//IBM-shared_classes_misc
+				}																									//IBM-shared_classes_misc
+			} else {																								//IBM-shared_classes_misc
+				// module has its own URL, find the class using the module URL										//IBM-shared_classes_misc
+				sharedClazz = sharedClassServiceProvider.findSharedClassURL(module.fileURL(), cn);					//IBM-shared_classes_misc
+				if (sharedClazz != null) { 																			//IBM-shared_classes_misc
+					cs = new CodeSource(module.codeSourceURL(), (CodeSigner[]) null);								//IBM-shared_classes_misc
+					defineClass = true;																				//IBM-shared_classes_misc
+				}																									//IBM-shared_classes_misc
+			}																									//IBM-shared_classes_misc
+			if (defineClass) {																					//IBM-shared_classes_misc
+				try {                                                   										//IBM-shared_classes_misc
+					Class<?> clazz = defineClass(cn, sharedClazz,         										//IBM-shared_classes_misc
+									cs,        																	//IBM-shared_classes_misc
+									man, pkgCheck);         													//IBM-shared_classes_misc
+					return clazz;                                       										//IBM-shared_classes_misc
+				} catch (IOException e) {                               										//IBM-shared_classes_misc
+					// defineClass() failed                                										//IBM-shared_classes_misc
+				}                                                      											//IBM-shared_classes_misc
+			}																									//IBM-shared_classes_misc
+		}																											//IBM-shared_classes_misc
+		return null;																								//IBM-shared_classes_misc
+	}
+
+	
+	/*                                                                          				//IBM-shared_classes_misc
+     * Defines a class using the class bytes, codesource and manifest           				//IBM-shared_classes_misc
+     * obtained from the specified shared class cache. The resulting            				//IBM-shared_classes_misc
+     * class must be resolved before it can be used.  This method is            				//IBM-shared_classes_misc
+     * used only in a Shared classes context.                                   				//IBM-shared_classes_misc
+     */                                                                        			 		//IBM-shared_classes_misc
+    private Class<?> defineClass(String name, byte[] sharedClazz, CodeSource codesource, Manifest man, boolean pkgCheck) throws IOException { //IBM-shared_classes_misc
+		if (pkgCheck) {																 			//IBM-shared_classes_misc
+			int i = name.lastIndexOf('.');                                          			//IBM-shared_classes_misc
+			if (-1 != i) {															 			//IBM-shared_classes_misc
+				String pkgname = name.substring(0, i);								 			//IBM-shared_classes_misc
+				URL url = codesource.getLocation();									 			//IBM-shared_classes_misc
+				defineOrCheckPackage(pkgname, man, url);							 			//IBM-shared_classes_misc
+			}																		 			//IBM-shared_classes_misc
+		}																			  			//IBM-shared_classes_misc
+       /*                                                                      					//IBM-shared_classes_misc
+         * Now read the class bytes and define the class.  We don't need to call  				//IBM-shared_classes_misc
+         * storeSharedClass(), since its already in our shared class cache.     				//IBM-shared_classes_misc
+         */                                                                     				//IBM-shared_classes_misc
+        return defineClass(name, sharedClazz, 0, sharedClazz.length, codesource); 				//IBM-shared_classes_misc
+     }                                                                          				//IBM-shared_classes_misc
 
     /**
      * Defines the given binary class name to the VM, loading the class
@@ -730,10 +986,11 @@ public class BuiltinClassLoader
     private Class<?> defineClass(String cn, LoadedModule loadedModule) {
         ModuleReference mref = loadedModule.mref();
         ModuleReader reader = moduleReaderFor(mref);
-
         try {
             ByteBuffer bb = null;
             URL csURL = null;
+            Manifest man = null;															//IBM-shared_classes_misc
+			boolean patched = false;
 
             // locate class file, special handling for patched modules to
             // avoid locating the resource twice
@@ -743,6 +1000,10 @@ public class BuiltinClassLoader
                 if (r != null) {
                     bb = r.getByteBuffer();
                     csURL = r.getCodeSourceURL();
+					if (!loadedModule.codeSourceURL().equals(csURL)) {						//IBM-shared_classes_misc
+						// class is not from the module, it is from the patched path. Do not share in this case		//IBM-shared_classes_misc
+						patched = true;														//IBM-shared_classes_misc
+					}																		//IBM-shared_classes_misc
                 }
             } else {
                 bb = reader.read(rn).orElse(null);
@@ -757,8 +1018,12 @@ public class BuiltinClassLoader
             CodeSource cs = new CodeSource(csURL, (CodeSigner[]) null);
             try {
                 // define class to VM
-                return defineClass(cn, bb, cs);
-
+                Class<?> clazz = defineClass(cn, bb, cs);									
+				if ((null != clazz) && !patched) {											//IBM-shared_classes_misc
+					//ignore the return value of storeClassIntoSharedClassesCache()			//IBM-shared_classes_misc
+					storeClassIntoSharedClassesCache(clazz, cs, man, -1, loadedModule);		//IBM-shared_classes_misc
+				}																			//IBM-shared_classes_misc
+				return clazz;
             } finally {
                 reader.release(bb);
             }
@@ -768,6 +1033,35 @@ public class BuiltinClassLoader
             return null;
         }
     }
+    
+	/**																											//IBM-shared_classes_misc
+     * Stores the class into the shared classes cache.															//IBM-shared_classes_misc
+     *																											//IBM-shared_classes_misc
+     * @return whether the class has been stored.																//IBM-shared_classes_misc
+     */																											//IBM-shared_classes_misc
+	private boolean storeClassIntoSharedClassesCache(Class<?> clazz, CodeSource cs, Manifest man, int index, LoadedModule module) {	//IBM-shared_classes_misc
+		boolean storeSuccessful = false;																//IBM-shared_classes_misc
+		if (usingSharedClasses()) {																		//IBM-shared_classes_misc
+			if (null == module) {																		//IBM-shared_classes_misc
+			// Check to see if we have already cached metadata for this index  							//IBM-shared_classes_misc
+				SharedClassMetaData metadata = sharedClassMetaDataCache.getSharedClassMetaData(index); 	//IBM-shared_classes_misc
+				// If we have not already cached the metadata for this index...   						//IBM-shared_classes_misc
+				if (metadata == null) {                                             					//IBM-shared_classes_misc
+					// ... create a new metadata entry                           						//IBM-shared_classes_misc
+					metadata = new SharedClassMetaData(cs, man);                    					//IBM-shared_classes_misc
+					// Cache the metadata for this index for future use         						//IBM-shared_classes_misc
+					sharedClassMetaDataCache.setSharedClassMetaData(index, metadata); 					//IBM-shared_classes_misc
+																										//IBM-shared_classes_misc
+				}                                                                   					//IBM-shared_classes_misc
+				// Store class in shared class cache for future use 									//IBM-shared_classes_misc
+				storeSuccessful = sharedClassServiceProvider.storeSharedClassURLClasspath(clazz, index);//IBM-shared_classes_misc
+			} else {																					//IBM-shared_classes_misc
+				// module has its own URL, store the class using the module URL							//IBM-shared_classes_misc
+				storeSuccessful = sharedClassServiceProvider.storeSharedClassURL(module.fileURL(), clazz);	//IBM-shared_classes_misc
+			}																						//IBM-shared_classes_misc
+		}																							//IBM-shared_classes_misc
+		return storeSuccessful;																		//IBM-shared_classes_misc
+	}																								//IBM-shared_classes_misc
 
     /**
      * Defines the given binary class name to the VM, loading the class
@@ -779,12 +1073,15 @@ public class BuiltinClassLoader
      */
     private Class<?> defineClass(String cn, Resource res) throws IOException {
         URL url = res.getCodeSourceURL();
+        Class<?> clazz = null;
+        CodeSource cs = null;								//IBM-shared_classes_misc
+        Manifest man = null;								//IBM-shared_classes_misc
 
         // if class is in a named package then ensure that the package is defined
         int pos = cn.lastIndexOf('.');
         if (pos != -1) {
             String pn = cn.substring(0, pos);
-            Manifest man = res.getManifest();
+            man = res.getManifest();
             defineOrCheckPackage(pn, man, url);
         }
 
@@ -792,14 +1089,20 @@ public class BuiltinClassLoader
         ByteBuffer bb = res.getByteBuffer();
         if (bb != null) {
             CodeSigner[] signers = res.getCodeSigners();
-            CodeSource cs = new CodeSource(url, signers);
-            return defineClass(cn, bb, cs);
+            cs = new CodeSource(url, signers);
+            clazz = defineClass(cn, bb, cs);
         } else {
             byte[] b = res.getBytes();
             CodeSigner[] signers = res.getCodeSigners();
-            CodeSource cs = new CodeSource(url, signers);
-            return defineClass(cn, b, 0, b.length, cs);
+            cs = new CodeSource(url, signers);
+            clazz = defineClass(cn, b, 0, b.length, cs);
         }
+        
+        if (null != clazz) {																	//IBM-shared_classes_misc
+            //ignore the return value of storeClassIntoSharedClassesCache()						//IBM-shared_classes_misc
+            storeClassIntoSharedClassesCache(clazz, cs, man, res.getClasspathLoadIndex(), null);//IBM-shared_classes_misc
+        }																						//IBM-shared_classes_misc
+        return clazz;
     }
 
 
