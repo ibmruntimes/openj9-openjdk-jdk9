@@ -51,7 +51,7 @@ declare -A commands
 declare -A shas
 
 pflag="false"
-base_git_url=git@github.com
+base_git_url=https://github.com
 
 for i in "$@"
 do
@@ -132,7 +132,7 @@ for i in "${!default_j9repos[@]}" ; do
 		fi
 		cd -
 	else
-		git_url=${base_git_url}:${default_j9repos[$i]}.git
+		git_url=${base_git_url}/${default_j9repos[$i]}
 
 		if [ ${j9repos[$i]+_} ]; then
 			git_url="${j9repos[$i]}"
