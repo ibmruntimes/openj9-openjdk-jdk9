@@ -17119,8 +17119,8 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
 
 
-  OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
-  OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags`
+  OPENJDK_SHA=`git -C $SRC_ROOT rev-list --tags --abbrev-commit --max-count=1`
+  OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "${OPENJDK_SHA}"`
 
 
 
