@@ -56,7 +56,7 @@ for i in "$@" ; do
 			;;
 
 		'--' ) # no more options
-			usage
+			break
 			;;
 
 		-*) # bad option
