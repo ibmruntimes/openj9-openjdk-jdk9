@@ -55,6 +55,10 @@ NUMCPU := $(shell grep -c ^processor /proc/cpuinfo)
 #$(info NUMCPU = $(NUMCPU))
 override MAKEFLAGS := -j $(NUMCPU)
 
+ifeq (true,$(OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS))
+  override MAKEFLAGS += --disable-warnings-as-errors
+endif
+
 .PHONY : \
 	build-j9 \
 	clean-j9 \
