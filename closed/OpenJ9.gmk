@@ -55,8 +55,11 @@ NUMCPU := $(shell grep -c ^processor /proc/cpuinfo)
 #$(info NUMCPU = $(NUMCPU))
 override MAKEFLAGS := -j $(NUMCPU)
 
+$(warning OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS is $(OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS))
+
 ifeq (true,$(OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS))
   override MAKEFLAGS += --disable-warnings-as-errors
+  $(warning MAKEFLAGS is $(MAKEFLAGS))
 endif
 
 .PHONY : \
