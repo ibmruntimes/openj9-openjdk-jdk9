@@ -38,8 +38,10 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   AC_SUBST(OPENJ9_TOPDIR)
 
   if test "${disable_warnings_as_errors+set}" = set; then
+    errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS true`)
     OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="true"
   else
+    errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS false`)
     OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="false"
   fi
 
