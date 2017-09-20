@@ -37,13 +37,27 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   AC_SUBST(OPENJ9OMR_TOPDIR)
   AC_SUBST(OPENJ9_TOPDIR)
 
-  if test "${disable_warnings_as_errors+set}" = set; then
-    errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS true`)
-    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="true"
-  else
-    errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS false`)
-    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="false"
+  if test "x$enable_warnings_as_errors" = "xyes"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
+  elif test "x$enable_warnings_as_errors" = "xno"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=true
+  elif test "x$enable_warnings_as_errors" = "x"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
   fi
+
+  #if test "x$disable_warnings_as_errors" = x ; then
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=true
+  #else
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
+  #fi
+
+  #if test "${disable_warnings_as_errors+set}" = set; then
+  #  errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS true`)
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="true"
+  #else
+  #  errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS false`)
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="false"
+  #fi
 
   AC_SUBST(OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS)
 

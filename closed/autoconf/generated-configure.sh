@@ -5251,7 +5251,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1505827386
+DATE_WHEN_GENERATED=1505904764
 
 ###############################################################################
 #
@@ -17204,13 +17204,27 @@ $as_echo "$as_me: Could not find freemarker.jar" >&6;}
 
 
 
-  if test "${disable_warnings_as_errors+set}" = set; then
-
-    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="true"
-  else
-
-    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="false"
+  if test "x$enable_warnings_as_errors" = "xyes"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
+  elif test "x$enable_warnings_as_errors" = "xno"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=true
+  elif test "x$enable_warnings_as_errors" = "x"; then
+    OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
   fi
+
+  #if test "x$disable_warnings_as_errors" = x ; then
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=true
+  #else
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS=false
+  #fi
+
+  #if test "${disable_warnings_as_errors+set}" = set; then
+  #  errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS true`)
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="true"
+  #else
+  #  errprint(`setting OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS false`)
+  #  OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS="false"
+  #fi
 
 
 
