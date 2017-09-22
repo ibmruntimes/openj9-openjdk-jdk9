@@ -18,8 +18,8 @@
 # ===========================================================================
 
 BOOT_MODULES += \
-    openj9.jvm \
     openj9.sharedclasses \
+    openj9.jvm \
     com.ibm.management \
     #
 
