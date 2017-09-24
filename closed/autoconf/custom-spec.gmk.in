@@ -33,25 +33,28 @@ define IncludeCustomExtension
   endif
 endef
 
-OPENJ9_TOPDIR           := @OPENJ9_TOPDIR@
-OPENJ9OMR_TOPDIR        := @OPENJ9OMR_TOPDIR@
+OPENJ9_TOPDIR                        := @OPENJ9_TOPDIR@
+OPENJ9OMR_TOPDIR                     := @OPENJ9OMR_TOPDIR@
 
 # CUDA
-OPENJ9_ENABLE_CUDA      := @OPENJ9_ENABLE_CUDA@
+OPENJ9_ENABLE_CUDA                   := @OPENJ9_ENABLE_CUDA@
 ifneq (,@OPENJ9_CUDA_HOME@)
-export CUDA_HOME        := @OPENJ9_CUDA_HOME@
+export CUDA_HOME                     := @OPENJ9_CUDA_HOME@
 endif
 ifneq (,@OPENJ9_GDK_HOME@)
-export GDK_HOME         := @OPENJ9_GDK_HOME@
+export GDK_HOME                      := @OPENJ9_GDK_HOME@
 endif
 
 # for constructing version output
-OPENJDK_SHA             := @OPENJDK_SHA@
-OPENJDK_TAG             := @OPENJDK_TAG@
+OPENJDK_SHA                          := @OPENJDK_SHA@
+OPENJDK_TAG                          := @OPENJDK_TAG@
 
 # required by UMA
-FREEMARKER_JAR          := @FREEMARKER_JAR@
-OPENJ9_BUILDSPEC        := @OPENJ9_BUILDSPEC@
+FREEMARKER_JAR                       := @FREEMARKER_JAR@
+OPENJ9_BUILDSPEC                     := @OPENJ9_BUILDSPEC@
 
 # required by JPP
-OPENJ9_PLATFORM_CODE    := @OPENJ9_PLATFORM_CODE@
+OPENJ9_PLATFORM_CODE                 := @OPENJ9_PLATFORM_CODE@
+
+# required by OMR
+OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS := @OPENJ9OMR_DISABLE_WARNINGS_AS_ERRORS@
