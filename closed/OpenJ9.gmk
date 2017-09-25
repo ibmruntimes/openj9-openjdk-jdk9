@@ -55,6 +55,13 @@ NUMCPU := $(shell grep -c ^processor /proc/cpuinfo)
 #$(info NUMCPU = $(NUMCPU))
 override MAKEFLAGS := -j $(NUMCPU)
 
+# honour the --disable-warnings-as-errors configure parameter during compilation of OMR
+ifeq (false,$(WARNINGS_AS_ERRORS))
+  OMR_EXTRA_CONFIGURE_ARGS := --disable-warnings-as-errors
+else
+  OMR_EXTRA_CONFIGURE_ARGS := --enable-warnings-as-errors
+endif
+
 .PHONY : \
 	build-j9 \
 	clean-j9 \
@@ -206,6 +213,7 @@ run-preprocessors-j9 : stage-j9 $(OUTPUT_ROOT)/vm/tr.source/jit.version $(OUTPUT
 			JAVA_HOME=$(BOOT_JDK) \
 			OMR_DIR=$(OUTPUT_ROOT)/vm/omr \
 			SPEC=$(OPENJ9_BUILDSPEC) \
+                        EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
 			UMA_OPTIONS_EXTRA="-buildDate $(shell date +'%Y%m%d')" \
 			tools \
 	)
