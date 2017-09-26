@@ -5347,7 +5347,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506449916
+DATE_WHEN_GENERATED=1506521710
 
 ###############################################################################
 #
@@ -18375,6 +18375,8 @@ $as_echo "yes" >&6; }
 
 
   # check 3rd party library requirement for UMA
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking that freemarker location is set" >&5
+$as_echo_n "checking that freemarker location is set... " >&6; }
 
 # Check whether --with-freemarker-jar was given.
 if test "${with_freemarker_jar+set}" = set; then :
@@ -18399,6 +18401,32 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: Could not find freemarker.jar" >&5
 $as_echo "$as_me: Could not find freemarker.jar" >&6;}
     as_fn_error $? "Cannot continue" "$LINENO" 5
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    as_ac_File=`$as_echo "ac_cv_file_$with_freemarker_jar" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $with_freemarker_jar" >&5
+$as_echo_n "checking for $with_freemarker_jar... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$with_freemarker_jar"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+else
+  as_fn_error $? "freemarker.jar not found at $with_freemarker_jar" "$LINENO" 5
+fi
+
   fi
 
   FREEMARKER_JAR=$with_freemarker_jar
