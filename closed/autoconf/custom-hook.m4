@@ -110,7 +110,14 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
   OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
 
   if test "x$OPENJ9_CPU" = xx86-64; then
-    OPENJ9_PLATFORM_CODE=xa64
+    if test "x$OPENJDK_BUILD_OS" = xlinux; then
+      OPENJ9_PLATFORM_CODE=xa64
+    elif test "x$OPENJDK_BUILD_OS" = xwindows; then
+      OPENJ9_PLATFORM_CODE=wa64
+      OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+    else
+      AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!])
+    fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
     OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
