@@ -204,7 +204,7 @@ $(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9OMR_SH
 
 run-preprocessors-j9 : stage-j9 $(OUTPUT_ROOT)/vm/tr.source/jit.version $(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
-	(export BOOT_JDK=$(BOOT_JDK) \
+	(export BOOT_JDK=$(BOOT_JDK) && export UMA_TREAT_WARNINGS_AS_ERRORS=0 \
 		&& cd $(OUTPUT_ROOT)/vm \
 		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
