@@ -1,10 +1,10 @@
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017 All Rights Reserved
 # ===========================================================================
-# 
+#
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
-# published by the Free Software Foundation.  
+# published by the Free Software Foundation.
 #
 # This code is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # ===========================================================================
 
 AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
@@ -37,10 +37,32 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   AC_SUBST(OPENJ9OMR_TOPDIR)
   AC_SUBST(OPENJ9_TOPDIR)
 
+  OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS
   OPENJ9_PLATFORM_SETUP
   OPENJDK_VERSION_DETAILS
   OPENJ9_CONFIGURE_CUDA
+  OPENJ9_CONFIGURE_NUMA
   OPENJ9_THIRD_PARTY_REQUIREMENTS
+])
+
+AC_DEFUN([OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS],
+[
+  BASIC_REQUIRE_PROGS(M4, m4)
+])
+
+AC_DEFUN_ONCE([OPENJ9_CONFIGURE_NUMA],
+[
+  if test "x$OPENJDK_TARGET_OS" = xlinux; then
+    if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
+      AC_CHECK_HEADERS([numa.h numaif.h],[NUMA_FOUND=yes],[NUMA_FOUND=no])
+      if test "x$NUMA_FOUND" = xno; then
+        HELP_MSG_MISSING_DEPENDENCY([numa])
+        AC_MSG_ERROR([Could not find numa! $HELP_MSG])
+      else
+        AC_MSG_RESULT([yes])
+      fi
+    fi
+  fi
 ])
 
 AC_DEFUN([OPENJ9_CONFIGURE_CUDA],
