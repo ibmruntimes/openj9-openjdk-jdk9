@@ -5347,7 +5347,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506521710
+DATE_WHEN_GENERATED=1506526613
 
 ###############################################################################
 #
@@ -18429,7 +18429,12 @@ fi
 
   fi
 
-  FREEMARKER_JAR=$with_freemarker_jar
+  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
+    FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
+  else
+    FREEMARKER_JAR=$with_freemarker_jar
+  fi
+
 
 
 

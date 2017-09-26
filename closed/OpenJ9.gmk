@@ -22,6 +22,7 @@ ifeq ($(wildcard $(SPEC)),)
   $(error OpenJ9.gmk needs SPEC set to a proper spec.gmk)
 endif
 include $(SPEC)
+include $(SRC_ROOT)/make/common/MakeBase.gmk
 
 ifeq (,$(BUILD_ID))
   BUILD_ID := 000000
@@ -201,7 +202,7 @@ run-preprocessors-j9 : stage-j9 $(OUTPUT_ROOT)/vm/tr.source/jit.version $(OUTPUT
 		&& cd $(OUTPUT_ROOT)/vm \
 		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
-			FREEMARKER_JAR=$(FREEMARKER_JAR) \
+			FREEMARKER_JAR="$(FREEMARKER_JAR)" \
 			J9VM_SHA=$(OPENJ9_SHA) \
 			JAVA_HOME=$(BOOT_JDK) \
 			OMR_DIR=$(OUTPUT_ROOT)/vm/omr \
@@ -228,19 +229,23 @@ J9JCL_SOURCES_DONEFILE := $(MAKESUPPORT_OUTPUTDIR)/j9jcl_sources.done
 recur_wildcard = $(foreach dir,$(wildcard $1/*),$(call recur_wildcard,$(dir),$2) $(filter $(subst *,%,$2),$(dir)))
 AllJclSource   = $(call recur_wildcard,$(OPENJ9_TOPDIR)/jcl/src,*.java)
 
+JPP_BASE_DIR := $(call FixPath,$(OPENJ9_TOPDIR))
+JPP_DEST     := $(call FixPath,$(SUPPORT_OUTPUTDIR)/j9jcl_sources)
+JPP_JAR      := $(call FixPath,$(OUTPUT_ROOT)/vm/sourcetools/lib/jpp.jar)
+
 $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 	@$(ECHO) Generating J9JCL sources
 	@$(MKDIR) -p $(SUPPORT_OUTPUTDIR)/j9jcl_sources
 	@$(BOOT_JDK)/bin/java \
-		-cp $(OUTPUT_ROOT)/vm/sourcetools/lib/jpp.jar \
+		-cp "$(JPP_JAR)" \
 		-Dfile.encoding=US-ASCII \
 		com.ibm.jpp.commandline.CommandlineBuilder \
 			-verdict \
-			-baseDir $(OPENJ9_TOPDIR)/ \
+			-baseDir "$(JPP_BASE_DIR)/" \
 			-config SIDECAR19-SE-B175 \
 			-srcRoot jcl/ \
 			-xml jpp_configuration.xml \
-			-dest $(SUPPORT_OUTPUTDIR)/j9jcl_sources \
+			-dest "$(JPP_DEST)" \
 			-macro:define "com.ibm.oti.vm.library.version=29" \
 			-tag:define "PLATFORM-$(OPENJ9_PLATFORM_CODE)"
 	@$(MKDIR) -p $(@D)
