@@ -213,7 +213,7 @@ run-preprocessors-j9 : stage-j9 $(OUTPUT_ROOT)/vm/tr.source/jit.version $(OUTPUT
 			JAVA_HOME=$(BOOT_JDK) \
 			OMR_DIR=$(OUTPUT_ROOT)/vm/omr \
 			SPEC=$(OPENJ9_BUILDSPEC) \
-                        EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
+			EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
 			UMA_OPTIONS_EXTRA="-buildDate $(shell date +'%Y%m%d')" \
 			tools \
 	)
