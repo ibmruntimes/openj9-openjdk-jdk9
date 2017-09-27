@@ -190,7 +190,12 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
     AC_CHECK_FILE($with_freemarker_jar,, AC_MSG_ERROR([freemarker.jar not found at $with_freemarker_jar]))
   fi
 
-  FREEMARKER_JAR=$with_freemarker_jar
+  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
+    FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
+  else
+    FREEMARKER_JAR=$with_freemarker_jar
+  fi
+
   AC_SUBST(FREEMARKER_JAR)
 ])
 
