@@ -165,6 +165,7 @@ AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
 AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
 [
   # check 3rd party library requirement for UMA
+  AC_MSG_CHECKING([that freemarker location is set])
   AC_ARG_WITH(freemarker-jar, [AS_HELP_STRING([--with-freemarker-jar],
       [path to freemarker.jar (used to build OpenJ9 build tools)])])
 
@@ -184,6 +185,9 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
 
     AC_MSG_NOTICE([Could not find freemarker.jar])
     AC_MSG_ERROR([Cannot continue])
+  else
+    AC_MSG_RESULT([yes])
+    AC_CHECK_FILE($with_freemarker_jar,, AC_MSG_ERROR([freemarker.jar not found at $with_freemarker_jar]))
   fi
 
   FREEMARKER_JAR=$with_freemarker_jar
