@@ -54,12 +54,11 @@ AC_DEFUN_ONCE([OPENJ9_CONFIGURE_NUMA],
 [
   if test "x$OPENJDK_TARGET_OS" = xlinux; then
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
-      AC_CHECK_HEADERS([numa.h numaif.h],[NUMA_FOUND=yes],[NUMA_FOUND=no])
-      if test "x$NUMA_FOUND" = xno; then
+      if test -f "/usr/include/numa.h" -a -f "/usr/include/numaif.h"; then
+        AC_MSG_RESULT([yes])
+      else
         HELP_MSG_MISSING_DEPENDENCY([numa])
         AC_MSG_ERROR([Could not find numa! $HELP_MSG])
-      else
-        AC_MSG_RESULT([yes])
       fi
     fi
   fi
