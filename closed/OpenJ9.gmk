@@ -57,9 +57,11 @@ override MAKEFLAGS := -j $(NUMCPU)
 
 # honour the --disable-warnings-as-errors configure parameter during compilation of OMR
 ifeq (false,$(WARNINGS_AS_ERRORS))
-  OMR_EXTRA_CONFIGURE_ARGS := --disable-warnings-as-errors
+  OMR_EXTRA_CONFIGURE_ARGS := "--disable-warnings-as-errors '''OMR_TREAT_WARNINGS_AS_ERRORS=0'''"
+#  OPENJ9_UMA_TREAT_WARNINGS_AS_ERRORS := 0
 else
-  OMR_EXTRA_CONFIGURE_ARGS := --enable-warnings-as-errors
+  OMR_EXTRA_CONFIGURE_ARGS := "--enable-warnings-as-errors '''OMR_TREAT_WARNINGS_AS_ERRORS=1'''"
+#  OPENJ9_UMA_TREAT_WARNINGS_AS_ERRORS := 1
 endif
 
 .PHONY : \
@@ -204,7 +206,7 @@ $(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9OMR_SH
 
 run-preprocessors-j9 : stage-j9 $(OUTPUT_ROOT)/vm/tr.source/jit.version $(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
-	(export BOOT_JDK=$(BOOT_JDK) && export UMA_TREAT_WARNINGS_AS_ERRORS=0 \
+	(export BOOT_JDK=$(BOOT_JDK) \
 		&& cd $(OUTPUT_ROOT)/vm \
 		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
