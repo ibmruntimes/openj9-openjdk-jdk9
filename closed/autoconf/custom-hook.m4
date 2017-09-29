@@ -155,8 +155,8 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
 
 AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
 [
-  OPENJDK_SHA=`git -C $SRC_ROOT rev-list --tags --abbrev-commit --max-count=1`
-  OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "${OPENJDK_SHA}"`
+  OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
+  OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags "${OPENJDK_SHA}"`
   AC_SUBST(OPENJDK_SHA)
   AC_SUBST(OPENJDK_TAG)
 ])

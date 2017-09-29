@@ -5245,7 +5245,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506631770
+DATE_WHEN_GENERATED=1506701929
 
 ###############################################################################
 #
@@ -17150,8 +17150,8 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
 
 
-  OPENJDK_SHA=`git -C $SRC_ROOT rev-list --tags --abbrev-commit --max-count=1`
-  OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "${OPENJDK_SHA}"`
+  OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
+  OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags "${OPENJDK_SHA}"`
 
 
 
