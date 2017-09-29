@@ -5245,7 +5245,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506701929
+DATE_WHEN_GENERATED=1506706543
 
 ###############################################################################
 #
@@ -17158,10 +17158,14 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
   if test "x$OPENJDK_TARGET_OS" = xlinux; then
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking checking for numa" >&5
+$as_echo_n "checking checking for numa... " >&6; }
       if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
       else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 
   # Print a helpful message on how to acquire the necessary build dependency.
   # numa is the help tag: freetype, cups, alsa etc
@@ -17211,6 +17215,8 @@ fi
 
 
   if test "x$with_freemarker_jar" == x; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
     printf "\n"
     printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
     printf "and has to be provided during configure process.\n"
@@ -17230,29 +17236,16 @@ $as_echo "$as_me: Could not find freemarker.jar" >&6;}
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-    as_ac_File=`$as_echo "ac_cv_file_$with_freemarker_jar" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $with_freemarker_jar" >&5
-$as_echo_n "checking for $with_freemarker_jar... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$with_freemarker_jar"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "freemarker.jar not found at $with_freemarker_jar" "$LINENO" 5
-fi
-
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking checking that '$with_freemarker_jar' exists" >&5
+$as_echo_n "checking checking that '$with_freemarker_jar' exists... " >&6; }
+    if test -f "$with_freemarker_jar"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      as_fn_error $? "freemarker.jar not found at '$with_freemarker_jar'" "$LINENO" 5
+    fi
   fi
 
   if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
