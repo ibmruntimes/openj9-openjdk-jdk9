@@ -310,14 +310,21 @@ MODULE_DEPS_MAKEFILE := $(MAKESUPPORT_OUTPUTDIR)/module-deps.gmk
 
 MODULE_INFOS := $(call FindAllModuleInfos, *)
 
+ifeq ($(TOOLCHAIN_TYPE),microsoft)
+  CPP_FLAGS_DEPS := -EP -nologo
+else
+  CPP_FLAGS_DEPS := -P - <
+endif
+
 $(MODULE_DEPS_MAKEFILE): $(MODULE_INFOS) \
     $(call DependOnVariable, MODULE_INFOS, $(MAKESUPPORT_OUTPUTDIR)/MODULE_INFOS.vardeps)
 	$(MKDIR) -p $(@D)
 	$(RM) $@
 	$(foreach m, $(MODULE_INFOS), \
-	    ( $(CPP) -P - < $m | $(NAWK) -v MODULE=$(call GetModuleNameFromModuleInfo, $m) '\
+	    ( $(CPP) $(CPP_FLAGS_DEPS) $m | $(NAWK) -v MODULE=$(call GetModuleNameFromModuleInfo, $m) '\
 	          BEGIN        { printf("DEPS_%s +=", MODULE); \
 	                         if (MODULE != "java.base") printf(" java.base"); } \
+	          /./          { gsub(/\r/, ""); } \
 	          /\t/         { gsub(/\t/, " "); } \
 	          /  +/        { gsub(/  +/, " "); } \
 	          /^ /         { sub(/^ /, ""); } \
@@ -327,9 +334,10 @@ $(MODULE_DEPS_MAKEFILE): $(MODULE_INFOS) \
 	                         gsub(/ /, ""); \
 	                         printf(" %s", $$0) } \
 	          END          { printf("\n") }' && \
-	      $(CPP) -P - < $m | $(NAWK) -v MODULE=$(call GetModuleNameFromModuleInfo, $m) '\
+	      $(CPP) $(CPP_FLAGS_DEPS) $m | $(NAWK) -v MODULE=$(call GetModuleNameFromModuleInfo, $m) '\
 	          BEGIN        { printf("TRANSITIVE_MODULES_%s +=", MODULE); \
 	                         if (MODULE != "java.base") printf(" java.base"); } \
+	          /./          { gsub(/\r/, ""); } \
 	          /\t/         { gsub(/\t/, " "); } \
 	          /  +/        { gsub(/  +/, " "); } \
 	          /^ /         { sub(/^ /, ""); } \
