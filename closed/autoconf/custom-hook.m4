@@ -54,9 +54,11 @@ AC_DEFUN_ONCE([OPENJ9_CONFIGURE_NUMA],
 [
   if test "x$OPENJDK_TARGET_OS" = xlinux; then
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
+      AC_MSG_CHECKING([checking for numa])
       if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
         AC_MSG_RESULT([yes])
       else
+        AC_MSG_RESULT([no])
         HELP_MSG_MISSING_DEPENDENCY([numa])
         AC_MSG_ERROR([Could not find numa! $HELP_MSG])
       fi
@@ -169,6 +171,7 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
       [path to freemarker.jar (used to build OpenJ9 build tools)])])
 
   if test "x$with_freemarker_jar" == x; then
+    AC_MSG_RESULT([no])
     printf "\n"
     printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
     printf "and has to be provided during configure process.\n"
@@ -186,7 +189,13 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
     AC_MSG_ERROR([Cannot continue])
   else
     AC_MSG_RESULT([yes])
-    AC_CHECK_FILE($with_freemarker_jar,, AC_MSG_ERROR([freemarker.jar not found at $with_freemarker_jar]))
+    AC_MSG_CHECKING([checking that '$with_freemarker_jar' exists])
+    if test -f "$with_freemarker_jar"; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([freemarker.jar not found at '$with_freemarker_jar'])
+    fi
   fi
 
   if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
