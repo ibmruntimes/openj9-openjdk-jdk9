@@ -46,6 +46,7 @@ export GDK_HOME         := @OPENJ9_GDK_HOME@
 endif
 
 # for constructing version output
+COMPILER_VERSION_STRING := @COMPILER_VERSION_STRING@
 OPENJDK_SHA             := @OPENJDK_SHA@
 OPENJDK_TAG             := @OPENJDK_TAG@
 

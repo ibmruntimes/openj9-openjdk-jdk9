@@ -54,7 +54,7 @@ AC_DEFUN_ONCE([OPENJ9_CONFIGURE_NUMA],
 [
   if test "x$OPENJDK_TARGET_OS" = xlinux; then
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
-      if test -f "/usr/include/numa.h" -a -f "/usr/include/numaif.h"; then
+      if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
         AC_MSG_RESULT([yes])
       else
         HELP_MSG_MISSING_DEPENDENCY([numa])
@@ -204,9 +204,6 @@ AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
 
   # Create the custom-spec.gmk
   AC_CONFIG_FILES([$OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in])
-
-  # Create the openj9_version_info.h
-  AC_CONFIG_FILES([$OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in])
 
   # explicitly disable classlist generation
   ENABLE_GENERATE_CLASSLIST="false"

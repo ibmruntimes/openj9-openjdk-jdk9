@@ -5245,7 +5245,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506618850
+DATE_WHEN_GENERATED=1506631770
 
 ###############################################################################
 #
@@ -17158,8 +17158,7 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
   if test "x$OPENJDK_TARGET_OS" = xlinux; then
     if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
-      #AC_CHECK_HEADERS([numa.h numaif.h],[NUMA_FOUND=yes],[NUMA_FOUND=no])
-      if test -f "/usr/include/numa.h" -a -f "/usr/include/numaif.h"; then
+      if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
       else
@@ -17195,7 +17194,7 @@ $as_echo "yes" >&6; }
     fi
   fi
 
-	as_fn_error $? "Could not find numa! $HELP_MSG" "$LINENO" 5
+        as_fn_error $? "Could not find numa! $HELP_MSG" "$LINENO" 5
       fi
     fi
   fi
@@ -68350,10 +68349,6 @@ $as_echo "$OUTPUT_DIR_IS_LOCAL" >&6; }
   ac_config_files="$ac_config_files $OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in"
 
 
-  # Create the openj9_version_info.h
-  ac_config_files="$ac_config_files $OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in"
-
-
   # explicitly disable classlist generation
   ENABLE_GENERATE_CLASSLIST="false"
 
@@ -69104,7 +69099,6 @@ do
     "$OUTPUT_ROOT/compare.sh") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/compare.sh:$AUTOCONF_DIR/compare.sh.in" ;;
     "$OUTPUT_ROOT/Makefile") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/Makefile:$AUTOCONF_DIR/Makefile.in" ;;
     "$OUTPUT_ROOT/custom-spec.gmk") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in" ;;
-    "$OUTPUT_ROOT/vm/util/openj9_version_info.h") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
