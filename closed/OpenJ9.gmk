@@ -247,7 +247,7 @@ run-preprocessors-j9 : stage-j9 \
 
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
-	(export OMR_DIR=$(OUTPUT_ROOT)/vm/omr OPENJ9_BUILD=true && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
+	(export OPENJ9_BUILD=true && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
 	@$(ECHO) OpenJ9 compile complete
 	# jvm and jsig are required for compiling other java.base support natives
 	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/server/
