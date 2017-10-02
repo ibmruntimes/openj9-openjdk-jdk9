@@ -23,40 +23,7 @@
 # questions.
 #
 
-include LauncherCommon.gmk
+# include LauncherCommon.gmk
 
-$(eval $(call SetupBuildLauncher, jinfo, \
-    MAIN_CLASS := sun.tools.jinfo.JInfo, \
-    JAVA_ARGS := \
-        -Dsun.jvm.hotspot.debugger.useProcDebugger \
-        -Dsun.jvm.hotspot.debugger.useWindbgDebugger, \
-    MACOSX_SIGNED := true, \
-))
-
-$(eval $(call SetupBuildLauncher, jmap, \
-    MAIN_CLASS := sun.tools.jmap.JMap, \
-    JAVA_ARGS := \
-        -Dsun.jvm.hotspot.debugger.useProcDebugger \
-        -Dsun.jvm.hotspot.debugger.useWindbgDebugger, \
-    MACOSX_SIGNED := true, \
-))
-
-$(eval $(call SetupBuildLauncher, jps, \
-    MAIN_CLASS := sun.tools.jps.Jps, \
-))
-
-$(eval $(call SetupBuildLauncher, jstack, \
-    MAIN_CLASS := sun.tools.jstack.JStack, \
-    JAVA_ARGS := \
-        -Dsun.jvm.hotspot.debugger.useProcDebugger \
-        -Dsun.jvm.hotspot.debugger.useWindbgDebugger, \
-    MACOSX_SIGNED := true, \
-))
-
-$(eval $(call SetupBuildLauncher, jstat, \
-    MAIN_CLASS := sun.tools.jstat.Jstat, \
-))
-
-$(eval $(call SetupBuildLauncher, jcmd, \
-    MAIN_CLASS := sun.tools.jcmd.JCmd, \
-))
+# This code was excluded because it generates the jinfo, jmap, jps, jstack, 
+# jstat and jcmd executables, which are not currently compatible with OpenJ9.
