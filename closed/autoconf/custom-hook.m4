@@ -1,10 +1,10 @@
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017 All Rights Reserved
 # ===========================================================================
-# 
+#
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
-# published by the Free Software Foundation.  
+# published by the Free Software Foundation.
 #
 # This code is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # ===========================================================================
 
 AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
@@ -37,10 +37,33 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   AC_SUBST(OPENJ9OMR_TOPDIR)
   AC_SUBST(OPENJ9_TOPDIR)
 
+  OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS
   OPENJ9_PLATFORM_SETUP
   OPENJDK_VERSION_DETAILS
   OPENJ9_CONFIGURE_CUDA
+  OPENJ9_CONFIGURE_NUMA
   OPENJ9_THIRD_PARTY_REQUIREMENTS
+])
+
+AC_DEFUN([OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS],
+[
+  BASIC_REQUIRE_PROGS(M4, m4)
+])
+
+AC_DEFUN_ONCE([OPENJ9_CONFIGURE_NUMA],
+[
+  if test "x$OPENJDK_TARGET_OS" = xlinux; then
+    if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
+      AC_MSG_CHECKING([checking for numa])
+      if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
+        AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+        HELP_MSG_MISSING_DEPENDENCY([numa])
+        AC_MSG_ERROR([Could not find numa! $HELP_MSG])
+      fi
+    fi
+  fi
 ])
 
 AC_DEFUN([OPENJ9_CONFIGURE_CUDA],
@@ -110,7 +133,14 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
   OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
 
   if test "x$OPENJ9_CPU" = xx86-64; then
-    OPENJ9_PLATFORM_CODE=xa64
+    if test "x$OPENJDK_BUILD_OS" = xlinux; then
+      OPENJ9_PLATFORM_CODE=xa64
+    elif test "x$OPENJDK_BUILD_OS" = xwindows; then
+      OPENJ9_PLATFORM_CODE=wa64
+      OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+    else
+      AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!])
+    fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
     OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
@@ -127,20 +157,21 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
 
 AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
 [
-  OPENJDK_SHA=`git -C $SRC_ROOT rev-list --tags --abbrev-commit --max-count=1`
-  OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "${OPENJDK_SHA}"`
+  OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
+  OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags "${OPENJDK_SHA}"`
   AC_SUBST(OPENJDK_SHA)
   AC_SUBST(OPENJDK_TAG)
 ])
 
 AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
 [
-  AC_MSG_CHECKING([that freemarker location is set])
   # check 3rd party library requirement for UMA
+  AC_MSG_CHECKING([that freemarker location is set])
   AC_ARG_WITH(freemarker-jar, [AS_HELP_STRING([--with-freemarker-jar],
       [path to freemarker.jar (used to build OpenJ9 build tools)])])
 
   if test "x$with_freemarker_jar" == x; then
+    AC_MSG_RESULT([no])
     printf "\n"
     printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
     printf "and has to be provided during configure process.\n"
@@ -158,10 +189,21 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
     AC_MSG_ERROR([Cannot continue])
   else
     AC_MSG_RESULT([yes])
-    AC_CHECK_FILE($with_freemarker_jar,, AC_MSG_ERROR([freemarker.jar not found in directory indicated]))
+    AC_MSG_CHECKING([checking that '$with_freemarker_jar' exists])
+    if test -f "$with_freemarker_jar"; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([freemarker.jar not found at '$with_freemarker_jar'])
+    fi
   fi
 
-  FREEMARKER_JAR=$with_freemarker_jar
+  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
+    FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
+  else
+    FREEMARKER_JAR=$with_freemarker_jar
+  fi
+
   AC_SUBST(FREEMARKER_JAR)
 ])
 
@@ -171,9 +213,6 @@ AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
 
   # Create the custom-spec.gmk
   AC_CONFIG_FILES([$OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in])
-
-  # Create the openj9_version_info.h
-  AC_CONFIG_FILES([$OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in])
 
   # explicitly disable classlist generation
   ENABLE_GENERATE_CLASSLIST="false"

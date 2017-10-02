@@ -971,6 +971,7 @@ OPENJDK_SHA
 COMPILER_VERSION_STRING
 OPENJ9_PLATFORM_CODE
 OPENJ9_BUILDSPEC
+M4
 OPENJ9_TOPDIR
 OPENJ9OMR_TOPDIR
 JVM_VARIANT_MAIN
@@ -1304,6 +1305,7 @@ DF
 CPIO
 NICE
 PANDOC
+M4
 MAKE
 UNZIP
 ZIPEXE
@@ -2277,6 +2279,7 @@ Some influential environment variables:
   CPIO        Override default value for CPIO
   NICE        Override default value for NICE
   PANDOC      Override default value for PANDOC
+  M4          Override default value for M4
   MAKE        Override default value for MAKE
   UNZIP       Override default value for UNZIP
   ZIPEXE      Override default value for ZIPEXE
@@ -5237,8 +5240,12 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 
+
+
+
+
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506103370
+DATE_WHEN_GENERATED=1506706543
 
 ###############################################################################
 #
@@ -17121,7 +17128,14 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
   OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
 
   if test "x$OPENJ9_CPU" = xx86-64; then
-    OPENJ9_PLATFORM_CODE=xa64
+    if test "x$OPENJDK_BUILD_OS" = xlinux; then
+      OPENJ9_PLATFORM_CODE=xa64
+    elif test "x$OPENJDK_BUILD_OS" = xwindows; then
+      OPENJ9_PLATFORM_CODE=wa64
+      OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+    else
+      as_fn_error $? "Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!" "$LINENO" 5
+    fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
     OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
@@ -17136,15 +17150,63 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
 
 
-  OPENJDK_SHA=`git -C $SRC_ROOT rev-list --tags --abbrev-commit --max-count=1`
-  OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "${OPENJDK_SHA}"`
+  OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
+  OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags "${OPENJDK_SHA}"`
 
 
 
 
+  if test "x$OPENJDK_TARGET_OS" = xlinux; then
+    if test "x$OPENJDK_TARGET_CPU_ARCH" = xx86 -o "x$OPENJDK_TARGET_CPU_ARCH" = xppc; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking checking for numa" >&5
+$as_echo_n "checking checking for numa... " >&6; }
+      if test -f /usr/include/numa.h -a -f /usr/include/numaif.h; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+  # Print a helpful message on how to acquire the necessary build dependency.
+  # numa is the help tag: freetype, cups, alsa etc
+  MISSING_DEPENDENCY=numa
+
+  if test "x$OPENJDK_BUILD_OS_ENV" = "xwindows.cygwin"; then
+    cygwin_help $MISSING_DEPENDENCY
+  elif test "x$OPENJDK_BUILD_OS_ENV" = "xwindows.msys"; then
+    msys_help $MISSING_DEPENDENCY
+  else
+    PKGHANDLER_COMMAND=
+
+    case $PKGHANDLER in
+      apt-get)
+        apt_help     $MISSING_DEPENDENCY ;;
+      yum)
+        yum_help     $MISSING_DEPENDENCY ;;
+      brew)
+        brew_help    $MISSING_DEPENDENCY ;;
+      port)
+        port_help    $MISSING_DEPENDENCY ;;
+      pkgutil)
+        pkgutil_help $MISSING_DEPENDENCY ;;
+      pkgadd)
+        pkgadd_help  $MISSING_DEPENDENCY ;;
+    esac
+
+    if test "x$PKGHANDLER_COMMAND" != x; then
+      HELP_MSG="You might be able to fix this by running '$PKGHANDLER_COMMAND'."
+    fi
+  fi
+
+        as_fn_error $? "Could not find numa! $HELP_MSG" "$LINENO" 5
+      fi
+    fi
+  fi
+
+
+  # check 3rd party library requirement for UMA
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking that freemarker location is set" >&5
 $as_echo_n "checking that freemarker location is set... " >&6; }
-  # check 3rd party library requirement for UMA
 
 # Check whether --with-freemarker-jar was given.
 if test "${with_freemarker_jar+set}" = set; then :
@@ -17153,6 +17215,8 @@ fi
 
 
   if test "x$with_freemarker_jar" == x; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
     printf "\n"
     printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
     printf "and has to be provided during configure process.\n"
@@ -17172,32 +17236,24 @@ $as_echo "$as_me: Could not find freemarker.jar" >&6;}
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-    as_ac_File=`$as_echo "ac_cv_file_$with_freemarker_jar" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $with_freemarker_jar" >&5
-$as_echo_n "checking for $with_freemarker_jar... " >&6; }
-if eval \${$as_ac_File+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$with_freemarker_jar"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
-
-else
-  as_fn_error $? "freemarker.jar not found in directory indicated" "$LINENO" 5
-fi
-
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking checking that '$with_freemarker_jar' exists" >&5
+$as_echo_n "checking checking that '$with_freemarker_jar' exists... " >&6; }
+    if test -f "$with_freemarker_jar"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      as_fn_error $? "freemarker.jar not found at '$with_freemarker_jar'" "$LINENO" 5
+    fi
   fi
 
-  FREEMARKER_JAR=$with_freemarker_jar
+  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
+    FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
+  else
+    FREEMARKER_JAR=$with_freemarker_jar
+  fi
+
 
 
 
@@ -17216,6 +17272,212 @@ fi
     as_fn_error $? "\"Cannot locate the path to OMR sources: $OPENJ9OMR_TOPDIR! Try 'bash get_source.sh' and restart configure\"" "$LINENO" 5
   fi
 
+
+
+
+
+
+
+
+  # Publish this variable in the help.
+
+
+  if [ -z "${M4+x}" ]; then
+    # The variable is not set by user, try to locate tool using the code snippet
+    for ac_prog in m4
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_M4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $M4 in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_M4="$M4" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_M4="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+M4=$ac_cv_path_M4
+if test -n "$M4"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $M4" >&5
+$as_echo "$M4" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$M4" && break
+done
+
+  else
+    # The variable is set, but is it from the command line or the environment?
+
+    # Try to remove the string !M4! from our list.
+    try_remove_var=${CONFIGURE_OVERRIDDEN_VARIABLES//!M4!/}
+    if test "x$try_remove_var" = "x$CONFIGURE_OVERRIDDEN_VARIABLES"; then
+      # If it failed, the variable was not from the command line. Ignore it,
+      # but warn the user (except for BASH, which is always set by the calling BASH).
+      if test "xM4" != xBASH; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Ignoring value of M4 from the environment. Use command line variables instead." >&5
+$as_echo "$as_me: WARNING: Ignoring value of M4 from the environment. Use command line variables instead." >&2;}
+      fi
+      # Try to locate tool using the code snippet
+      for ac_prog in m4
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_M4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $M4 in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_M4="$M4" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_M4="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+M4=$ac_cv_path_M4
+if test -n "$M4"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $M4" >&5
+$as_echo "$M4" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$M4" && break
+done
+
+    else
+      # If it succeeded, then it was overridden by the user. We will use it
+      # for the tool.
+
+      # First remove it from the list of overridden variables, so we can test
+      # for unknown variables in the end.
+      CONFIGURE_OVERRIDDEN_VARIABLES="$try_remove_var"
+
+      # Check if we try to supply an empty value
+      if test "x$M4" = x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: Setting user supplied tool M4= (no value)" >&5
+$as_echo "$as_me: Setting user supplied tool M4= (no value)" >&6;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for M4" >&5
+$as_echo_n "checking for M4... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled" >&5
+$as_echo "disabled" >&6; }
+      else
+        # Check if the provided tool contains a complete path.
+        tool_specified="$M4"
+        tool_basename="${tool_specified##*/}"
+        if test "x$tool_basename" = "x$tool_specified"; then
+          # A command without a complete path is provided, search $PATH.
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Will search for user supplied tool M4=$tool_basename" >&5
+$as_echo "$as_me: Will search for user supplied tool M4=$tool_basename" >&6;}
+          # Extract the first word of "$tool_basename", so it can be a program name with args.
+set dummy $tool_basename; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_M4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $M4 in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_M4="$M4" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_M4="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+M4=$ac_cv_path_M4
+if test -n "$M4"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $M4" >&5
+$as_echo "$M4" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+          if test "x$M4" = x; then
+            as_fn_error $? "User supplied tool $tool_basename could not be found" "$LINENO" 5
+          fi
+        else
+          # Otherwise we believe it is a complete path. Use it as it is.
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Will use user supplied tool M4=$tool_specified" >&5
+$as_echo "$as_me: Will use user supplied tool M4=$tool_specified" >&6;}
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for M4" >&5
+$as_echo_n "checking for M4... " >&6; }
+          if test ! -x "$tool_specified"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+            as_fn_error $? "User supplied tool M4=$tool_specified does not exist or is not executable" "$LINENO" 5
+          fi
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: $tool_specified" >&5
+$as_echo "$tool_specified" >&6; }
+        fi
+      fi
+    fi
+
+  fi
+
+
+
+  if test "x$M4" = x; then
+    as_fn_error $? "Could not find required tool for M4" "$LINENO" 5
+  fi
 
 
 
@@ -17272,6 +17534,7 @@ $as_echo "no (default)" >&6; }
   else
     as_fn_error $? "--enable-cuda accepts no argument" "$LINENO" 5
   fi
+
 
 
 
@@ -68079,10 +68342,6 @@ $as_echo "$OUTPUT_DIR_IS_LOCAL" >&6; }
   ac_config_files="$ac_config_files $OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in"
 
 
-  # Create the openj9_version_info.h
-  ac_config_files="$ac_config_files $OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in"
-
-
   # explicitly disable classlist generation
   ENABLE_GENERATE_CLASSLIST="false"
 
@@ -68833,7 +69092,6 @@ do
     "$OUTPUT_ROOT/compare.sh") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/compare.sh:$AUTOCONF_DIR/compare.sh.in" ;;
     "$OUTPUT_ROOT/Makefile") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/Makefile:$AUTOCONF_DIR/Makefile.in" ;;
     "$OUTPUT_ROOT/custom-spec.gmk") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/custom-spec.gmk:$CLOSED_AUTOCONF_DIR/custom-spec.gmk.in" ;;
-    "$OUTPUT_ROOT/vm/util/openj9_version_info.h") CONFIG_FILES="$CONFIG_FILES $OUTPUT_ROOT/vm/util/openj9_version_info.h:$CLOSED_AUTOCONF_DIR/openj9_version_info.h.in" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
