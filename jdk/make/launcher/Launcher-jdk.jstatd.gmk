@@ -23,8 +23,4 @@
 # questions.
 #
 
-include LauncherCommon.gmk
-
-$(eval $(call SetupBuildLauncher, jstatd, \
-    MAIN_CLASS := sun.tools.jstatd.Jstatd, \
-))
+# This code was excluded because it generates the jstatd executable, which is not currently compatible with OpenJ9.
