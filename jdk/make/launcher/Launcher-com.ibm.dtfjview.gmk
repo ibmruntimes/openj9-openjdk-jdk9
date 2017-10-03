@@ -19,8 +19,8 @@
 
 include LauncherCommon.gmk
 
-$(eval $(call SetupBuildLauncher, traceformat, \
-    MAIN_MODULE := com.ibm.traceformat, \
-    MAIN_CLASS := com.ibm.jvm.traceformat.TraceFormat, \
+$(eval $(call SetupBuildLauncher, jdmpview, \
+    MAIN_MODULE := com.ibm.dtfjview, \
+    MAIN_CLASS := com.ibm.jvm.dtfjview.DTFJView, \
     CFLAGS := -DEXPAND_CLASSPATH_WILDCARDS, \
 ))
