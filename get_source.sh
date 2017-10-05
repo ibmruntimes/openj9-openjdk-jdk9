@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
@@ -25,6 +25,9 @@
 # questions.
 #
 
+# exit immediately if any unexpected error occurs
+set -e
+
 usage() {
 	echo "Usage: $0 [-h|--help] [... other j9 options] [-parallel=<true|false>]"
 	echo "where:"
@@ -37,9 +40,9 @@ usage() {
 	echo "  -omr-repo         the OpenJ9/omr repository url: https://github.com/eclipse/openj9-omr.git"
 	echo "                    or git@github.com:<namespace>/openj9-omr.git"
 	echo "  -omr-branch       the OpenJ9/omr git branch: openj9"
-	echo "  -omr-sha           a commit SHA for the omr repository"
+	echo "  -omr-sha          a commit SHA for the omr repository"
 	echo "  -parallel         (boolean) if 'true' then the clone j9 repository commands run in parallel, default is false"
-	echo " "
+	echo ""
 	exit 1
 }
 
@@ -71,4 +74,3 @@ done
 
 # Get clones of OpenJ9 absent repositories
 bash closed/get_j9_source.sh ${j9options}
-
