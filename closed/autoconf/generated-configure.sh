@@ -5245,7 +5245,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1506706543
+DATE_WHEN_GENERATED=1507288529
 
 ###############################################################################
 #
@@ -17120,6 +17120,9 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
     s390x)
       OPENJ9_CPU=390-64
       ;;
+    powerpc64)
+      OPENJ9_CPU=ppc-64
+      ;;
     *)
       as_fn_error $? "unsupported OpenJ9 cpu $build_cpu" "$LINENO" 5
       ;;
@@ -17141,6 +17144,8 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
     OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
   elif test "x$OPENJ9_CPU" = x390-64; then
     OPENJ9_PLATFORM_CODE=xz64
+  elif test "x$OPENJ9_CPU" = xppc-64; then
+    OPENJ9_PLATFORM_CODE=ap64
   else
     as_fn_error $? "Unsupported OpenJ9 cpu ${OPENJ9_CPU}, contact support team!" "$LINENO" 5
   fi

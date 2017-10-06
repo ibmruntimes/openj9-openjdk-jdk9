@@ -51,10 +51,8 @@ OPENJ9_MISC_FILES := \
 OPENJ9_NOTICE_FILES := openj9-notices.html
 OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX)
 
-# we should try using the makeflags as defined by openjdk (issue 59)
-NUMCPU := $(shell grep -c ^processor /proc/cpuinfo)
-#$(info NUMCPU = $(NUMCPU))
-override MAKEFLAGS := -j $(NUMCPU)
+# openjdk makeflags don't work with openj9/omr native compiles; override with number of cpus which openj9 and omr need supplied
+override MAKEFLAGS := -j $(JOBS)
 
 # honour the --disable-warnings-as-errors configure parameter during compilation of OMR
 ifeq (false,$(WARNINGS_AS_ERRORS))
@@ -212,7 +210,7 @@ OPENJ9_VERSION_VARS := \
 	#
 
 OPENJ9_VERSION_SCRIPT := \
-	$(foreach var,$(OPENJ9_VERSION_VARS),-e 's:@${var}@:$(value $(var)):g')
+	$(foreach var,$(OPENJ9_VERSION_VARS),-e "s|@${var}@|$(value $(var))|g")
 
 $(OUTPUT_ROOT)/vm/util/openj9_version_info.h : $(SRC_ROOT)/closed/openj9_version_info.h.in
 	@$(MKDIR) -p $(@D)

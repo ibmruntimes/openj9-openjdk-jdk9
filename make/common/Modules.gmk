@@ -310,8 +310,10 @@ MODULE_DEPS_MAKEFILE := $(MAKESUPPORT_OUTPUTDIR)/module-deps.gmk
 
 MODULE_INFOS := $(call FindAllModuleInfos, *)
 
-ifeq ($(TOOLCHAIN_TYPE),microsoft)
+ifeq ($(TOOLCHAIN_TYPE), microsoft)
   CPP_FLAGS_DEPS := -EP -nologo
+else ifeq ($(TOOLCHAIN_TYPE), xlc)
+  CPP_FLAGS_DEPS := -E
 else
   CPP_FLAGS_DEPS := -P - <
 endif
