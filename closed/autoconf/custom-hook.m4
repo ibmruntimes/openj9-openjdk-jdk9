@@ -146,6 +146,9 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
     elif test "x$OPENJDK_BUILD_OS" = xwindows; then
       OPENJ9_PLATFORM_CODE=wa64
       OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+    elif test "x$OPENJDK_BUILD_OS" = xmacosx; then
+      OPENJ9_PLATFORM_CODE=oa64
+      OPENJ9_BUILDSPEC="osx_x86-64"
     else
       AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!])
     fi
