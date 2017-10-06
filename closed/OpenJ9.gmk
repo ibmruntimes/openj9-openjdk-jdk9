@@ -256,9 +256,52 @@ build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
 	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
 	@$(ECHO) OpenJ9 compile complete
+
+        # Copy J9 VM support modules required for jlink
+	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/j9vm
+	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.management/compressedrefs
+	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/openj9.sharedclasses/compressedrefs
+	
+	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/libjvm_b156.so $(OUTPUT_ROOT)/support/modules_libs/java.base/j9vm/libjvm.so
+	@$(CP) -p $(OUTPUT_ROOT)/vm/java*.properties $(OUTPUT_ROOT)/support/modules_libs/java.base
+	@$(CP) -p $(OUTPUT_ROOT)/vm/J9TraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
+	@$(CP) -p $(OUTPUT_ROOT)/vm/OMRTraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
+	@$(CP) -p $(OUTPUT_ROOT)/vm/options.default $(OUTPUT_ROOT)/support/modules_libs/java.base
+	
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9vm29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libcuda4j29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libffi29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9thr29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libhyprtshim29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libhythr.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9dmp29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9gc29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9gc29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9gcchk29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9hookable29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9jit29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs	
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9jnichk29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9jvmti29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9prt29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9trc29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9vm29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9vmchk29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9vrb29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9zlib29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libomrsig.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libjsig.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+
+	@$(CP) -p $(OUTPUT_ROOT)/vm/j9vm_b156/libjvm.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs        
+	@$(CP) -p $(OUTPUT_ROOT)/vm/jcl/cl_se9/libjclse9_29.so $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs
+
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libj9shr29.so $(OUTPUT_ROOT)/support/modules_libs/openj9.sharedclasses/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libmanagement.so $(OUTPUT_ROOT)/support/modules_libs/java.management/compressedrefs
+	@$(CP) -p $(OUTPUT_ROOT)/vm/libmanagement_ext.so $(OUTPUT_ROOT)/support/modules_libs/java.management/compressedrefs
+
 	# jvm and jsig are required for compiling other java.base support natives
 	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/server/
-	@$(CP) -p $(OUTPUT_ROOT)/vm/j9vm_b156/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) $(OUTPUT_ROOT)/support/modules_libs/java.base/server/
+	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/libjvm_b156.so $(OUTPUT_ROOT)/support/modules_libs/java.base/server/libjvm.so
 	@$(ECHO) Creating support/modules_libs/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) from J9 sources
 	@$(CP) -p $(OUTPUT_ROOT)/vm/$(LIBRARY_PREFIX)jsig$(SHARED_LIBRARY_SUFFIX) $(OUTPUT_ROOT)/support/modules_libs/java.base/
 	@$(ECHO) Creating support/modules_libs/java.base/$(LIBRARY_PREFIX)jsig$(SHARED_LIBRARY_SUFFIX) from J9 sources
