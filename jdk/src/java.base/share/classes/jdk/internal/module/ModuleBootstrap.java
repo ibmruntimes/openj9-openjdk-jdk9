@@ -365,12 +365,6 @@ public final class ModuleBootstrap {
 
         PerfCounters.loadModulesTime.addElapsedTimeFrom(t5);
 
-        ClassLoader appLoader = ClassLoaders.appClassLoader();							//IBM-shared_classes_misc
-        ClassLoader platformLoader = ClassLoaders.platformClassLoader();				//IBM-shared_classes_misc
-        ((BuiltinClassLoader)platformLoader).initializeSharedClassesSupport();			//IBM-shared_classes_misc
-        ((BuiltinClassLoader)appLoader).initializeSharedClassesSupport();				//IBM-shared_classes_misc
-
-
         // Step 6: Define all modules to the VM
 
         long t6 = System.nanoTime();
@@ -389,6 +383,11 @@ public final class ModuleBootstrap {
         boolean extraExportsOrOpens = addExtraExportsAndOpens(bootLayer);
         addIllegalAccess(bootLayer, upgradeModulePath, extraExportsOrOpens);
         PerfCounters.adjustModulesTime.addElapsedTimeFrom(t7);
+        
+        ClassLoader appLoader = ClassLoaders.appClassLoader();							//IBM-shared_classes_misc
+        ClassLoader platformLoader = ClassLoaders.platformClassLoader();				//IBM-shared_classes_misc
+        ((BuiltinClassLoader)platformLoader).initializeSharedClassesSupport();			//IBM-shared_classes_misc
+        ((BuiltinClassLoader)appLoader).initializeSharedClassesSupport();				//IBM-shared_classes_misc
 
         // total time to initialize
         PerfCounters.bootstrapTime.addElapsedTimeFrom(t1);
