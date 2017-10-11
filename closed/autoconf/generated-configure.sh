@@ -5245,7 +5245,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1507288529
+DATE_WHEN_GENERATED=1507733473
 
 ###############################################################################
 #
@@ -17262,8 +17262,13 @@ $as_echo "no" >&6; }
 
 
 
-  JAVA_BASE_LDFLAGS="${JAVA_BASE_LDFLAGS} -L\$(SUPPORT_OUTPUTDIR)/../vm"
-  OPENJDK_BUILD_JAVA_BASE_LDFLAGS="${OPENJDK_BUILD_JAVA_BASE_LDFLAGS} -L\$(SUPPORT_OUTPUTDIR)/../vm"
+  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin; then
+    JAVA_BASE_LDFLAGS="${JAVA_BASE_LDFLAGS} -libpath:\$(SUPPORT_OUTPUTDIR)/../vm/lib"
+    OPENJDK_BUILD_JAVA_BASE_LDFLAGS="${OPENJDK_BUILD_JAVA_BASE_LDFLAGS} -libpath:\$(SUPPORT_OUTPUTDIR)/../vm/lib"
+  else
+    JAVA_BASE_LDFLAGS="${JAVA_BASE_LDFLAGS} -L\$(SUPPORT_OUTPUTDIR)/../vm"
+    OPENJDK_BUILD_JAVA_BASE_LDFLAGS="${OPENJDK_BUILD_JAVA_BASE_LDFLAGS} -L\$(SUPPORT_OUTPUTDIR)/../vm"
+  fi
 
   # Where are the OpenJ9 sources.
   OPENJ9OMR_TOPDIR="$SRC_ROOT/omr"
