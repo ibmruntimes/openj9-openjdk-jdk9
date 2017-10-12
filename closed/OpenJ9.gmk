@@ -63,11 +63,14 @@ else
   OMR_EXTRA_CONFIGURE_ARGS := "--enable-warnings-as-errors OMR_TREAT_WARNINGS_AS_ERRORS=1"
 endif
 
-# disable mingw on windows, use default c compiler
 ifeq ($(OPENJDK_TARGET_OS),windows)
+  # disable mingw on windows, use default c compiler
   EXPORT_NO_USE_MINGW := NO_USE_MINGW=true
+  # set the output directory for shared libraries
+  OPENJ9_LIBS_OUTPUT_DIR := bin
 else
   EXPORT_NO_USE_MINGW :=
+  OPENJ9_LIBS_OUTPUT_DIR := lib
 endif
 
 .PHONY : \
@@ -87,17 +90,17 @@ endif
 # param 2 = The jdk/jre directory to add openj9 content
 define generated_target_rules
 .PHONY : stage_openj9_$1
-$(foreach file,$(OPENJ9_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/lib/compressedrefs/$(file),$(OUTPUT_ROOT)/vm/$(file))))
-$(foreach file,$(OPENJ9_ALT_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/lib/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_ALT_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES),$(eval $(call openj9_copy_file,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_NOTICE_FILES),$(eval $(call openj9_copy_file,$2/$(file),$(SRC_ROOT)/$(file))))
-$(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/lib/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
-stage_openj9_shared_libraries_$1 := $(addprefix $2/lib/compressedrefs/,$(OPENJ9_SHARED_LIBRARIES))
-stage_openj9_alt_shared_libraries_$1 := $(addprefix $2/lib/compressedrefs/,$(notdir $(OPENJ9_ALT_SHARED_LIBRARIES)))
+$(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
+stage_openj9_shared_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/,$(OPENJ9_SHARED_LIBRARIES))
+stage_openj9_alt_shared_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/,$(notdir $(OPENJ9_ALT_SHARED_LIBRARIES)))
 stage_openj9_misc_files_$1 := $(addprefix $2/lib/,$(OPENJ9_MISC_FILES))
 stage_openj9_notice_files_$1 := $(addprefix $2/,$(OPENJ9_NOTICE_FILES))
 stage_openj9_property_files_$1 := $(addprefix $2/lib/,$(OPENJ9_PROPERTY_FILES))
-stage_openj9_redirector_$1 := $2/lib/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+stage_openj9_redirector_$1 := $2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 stage_openj9_$1 : \
 	$$(stage_openj9_shared_libraries_$1) \
 	$$(stage_openj9_alt_shared_libraries_$1) \
