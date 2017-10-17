@@ -327,14 +327,14 @@ run-preprocessors-j9 : stage-j9 \
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
 	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
-	@$(ECHO) OpenJ9 compile completei
+	@$(ECHO) OpenJ9 compile complete
 
 	@$(CP) -p $(OUTPUT_ROOT)/vm/java*.properties $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/J9TraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/OMRTraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/options.default $(OUTPUT_ROOT)/support/modules_libs/java.base
 	
-# jvm are required for compiling other java.base support natives
+	# jvm are required for compiling other java.base support natives
 	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/server/
 	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base/j9vm
 	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX) $(OUTPUT_ROOT)/support/modules_libs/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
