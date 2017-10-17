@@ -319,6 +319,8 @@ run-preprocessors-j9 : stage-j9 \
 			SPEC=$(OPENJ9_BUILDSPEC) \
 			EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
 			UMA_OPTIONS_EXTRA="-buildDate $(shell date +'%Y%m%d')" \
+			$(if $(findstring true, $(OPENJ9_ENABLE_CMAKE)), ENABLE_CMAKE=true CALLED_BY_SOURCE_ZIP=yes) \
+			CMAKE=$(CMAKE) \
 			tools \
 	)
 	# for xLinux there is a hardcoded reference in mkconstants.mk for gcc-4.6.  Openjdk minimum gcc is 4.8.2
@@ -326,7 +328,13 @@ run-preprocessors-j9 : stage-j9 \
 
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
+ifeq ($(OPENJ9_ENABLE_CMAKE),true)
+	(export OMR_DIR=$(OUTPUT_ROOT)/vm/omr OPENJ9_BUILD=true && \
+		cd $(OUTPUT_ROOT)/vm/build && $(MAKE) $(MAKEFLAGS) install \
+	)
+else
 	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
+endif
 	@$(ECHO) OpenJ9 compile complete
 
 	@$(CP) -p $(OUTPUT_ROOT)/vm/java*.properties $(OUTPUT_ROOT)/support/modules_libs/java.base
