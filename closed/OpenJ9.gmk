@@ -124,21 +124,21 @@ endif
 # param 2 = The jdk/jre directory to add openj9 content
 define generated_target_rules_build
 .PHONY : stage_openj9_$1
-$(foreach file,$(OPENJ9_BUILD_LIBRARIES),$(eval $(call openj9_copy_file,$2/lib/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
-$(foreach file,$(OPENJ9_ALT_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/lib/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_BUILD_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_ALT_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES),$(eval $(call openj9_copy_file,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_NOTICE_FILES),$(eval $(call openj9_copy_file,$2/$(file),$(SRC_ROOT)/$(file))))
-$(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/lib/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES),$(eval $(call openj9_copy_file,$(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES),$(eval $(call openj9_copy_file,$(OUTPUT_ROOT)/support/modules_libs/openj9.sharedclasses/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_MANAGEMENT_LIBRARIES),$(eval $(call openj9_copy_file,$(OUTPUT_ROOT)/support/modules_libs/java.management/compressedrefs/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
-stage_openj9_build_libraries_$1 := $(addprefix $2/lib/compressedrefs/,$(OPENJ9_BUILD_LIBRARIES))
-stage_openj9_alt_shared_libraries_$1 := $(addprefix $2/lib/compressedrefs/,$(notdir $(OPENJ9_ALT_SHARED_LIBRARIES)))
+stage_openj9_build_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/,$(OPENJ9_BUILD_LIBRARIES))
+stage_openj9_alt_shared_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/compressedrefs/,$(notdir $(OPENJ9_ALT_SHARED_LIBRARIES)))
 stage_openj9_misc_files_$1 := $(addprefix $2/lib/,$(OPENJ9_MISC_FILES))
 stage_openj9_notice_files_$1 := $(addprefix $2/,$(OPENJ9_NOTICE_FILES))
 stage_openj9_property_files_$1 := $(addprefix $2/lib/,$(OPENJ9_PROPERTY_FILES))
-stage_openj9_redirector_$1 := $2/lib/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+stage_openj9_redirector_$1 := $2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 stage_openj9_java_base_build_modules := $(addprefix $(OUTPUT_ROOT)/support/modules_libs/java.base/compressedrefs/,$(notdir $(OPENJ9_JAVA_BASE_LIBRARIES)))
 stage_openj9_shared_classes_build_modules := $(addprefix $(OUTPUT_ROOT)/support/modules_libs/openj9.sharedclasses/compressedrefs/,$(OPENJ9_SHARED_CLASSES_LIBRARIES))
 stage_openj9_management_modules := $(addprefix $(OUTPUT_ROOT)/support/modules_libs/java.management/compressedrefs/,$(notdir $(OPENJ9_MANAGEMENT_LIBRARIES)))
