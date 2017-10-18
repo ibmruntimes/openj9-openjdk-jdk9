@@ -45,9 +45,32 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS
   OPENJ9_PLATFORM_SETUP
   OPENJDK_VERSION_DETAILS
+  OPENJ9_CONFIGURE_CMAKE
   OPENJ9_CONFIGURE_CUDA
   OPENJ9_CONFIGURE_NUMA
   OPENJ9_THIRD_PARTY_REQUIREMENTS
+])
+
+AC_DEFUN([OPENJ9_CONFIGURE_CMAKE],
+[
+	AC_ARG_WITH(cmake, [AS_HELP_STRING([--with-cmake], [enable building openJ9 with CMake])],
+		[
+			if test "x$with_cmake" != "x"; then
+				CMAKE=$with_cmake
+			fi
+			with_cmake=yes
+		],
+		[with_cmake=no])
+	if test "$with_cmake" == "yes"; then
+		AC_PATH_PROG([CMAKE], [cmake])
+		if test "x$CMAKE" == x; then
+			AC_MSG_ERROR([Could not find CMake])
+		fi
+		OPENJ9_ENABLE_CMAKE=true
+	else
+		OPENJ9_ENABLE_CMAKE=false
+	fi
+	AC_SUBST(OPENJ9_ENABLE_CMAKE)
 ])
 
 AC_DEFUN([OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS],

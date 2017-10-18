@@ -966,6 +966,8 @@ FREEMARKER_JAR
 OPENJ9_GDK_HOME
 OPENJ9_CUDA_HOME
 OPENJ9_ENABLE_CUDA
+OPENJ9_ENABLE_CMAKE
+CMAKE
 OPENJDK_TAG
 OPENJDK_SHA
 COMPILER_VERSION_STRING
@@ -1112,6 +1114,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -1142,6 +1145,7 @@ enable_debug
 with_debug_level
 with_jvm_variants
 with_cpu_port
+with_cmake
 with_cuda
 with_gdk
 enable_cuda
@@ -1408,6 +1412,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1660,6 +1665,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1797,7 +1811,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1950,6 +1964,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -2062,6 +2077,7 @@ Optional Packages:
                           [server]
   --with-cpu-port         specify sources to use for Hotspot 64-bit ARM port
                           (arm64,aarch64) [aarch64]
+  --with-cmake            enable building openJ9 with CMake
   --with-cuda             use this directory as CUDA_HOME
   --with-gdk              use this directory as GDK_HOME
   --with-freemarker-jar   path to freemarker.jar (used to build OpenJ9 build
@@ -5244,8 +5260,10 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 
+
+
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1507932411
+DATE_WHEN_GENERATED=1508258731
 
 ###############################################################################
 #
@@ -17494,6 +17512,70 @@ $as_echo "$tool_specified" >&6; }
 
 
 
+
+
+
+
+# Check whether --with-cmake was given.
+if test "${with_cmake+set}" = set; then :
+  withval=$with_cmake;
+			if test "x$with_cmake" != "x"; then
+				CMAKE=$with_cmake
+			fi
+			with_cmake=yes
+
+else
+  with_cmake=no
+fi
+
+	if test "$with_cmake" == "yes"; then
+		# Extract the first word of "cmake", so it can be a program name with args.
+set dummy cmake; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_CMAKE+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $CMAKE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CMAKE="$CMAKE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CMAKE="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+CMAKE=$ac_cv_path_CMAKE
+if test -n "$CMAKE"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CMAKE" >&5
+$as_echo "$CMAKE" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		if test "x$CMAKE" == x; then
+			as_fn_error $? "Could not find CMake" "$LINENO" 5
+		fi
+		OPENJ9_ENABLE_CMAKE=true
+	else
+		OPENJ9_ENABLE_CMAKE=false
+	fi
 
 
 
