@@ -224,7 +224,11 @@ else
 endif
 
 # As DDR is not enabled we use sed to filter .spec files.
-SPEC_SED_SCRIPT := -e '/module_ddr/s/true/false/g'
+# Also use sed to disable windows rebase in the .spec files.
+SPEC_SED_SCRIPT := \
+  -e '/module_ddr/s/true/false/g' \
+  -e '/uma_windowsRebase/s/true/false/g' \
+  #
 
 # openj9_stage_buildspec_file
 # ---------------------------
