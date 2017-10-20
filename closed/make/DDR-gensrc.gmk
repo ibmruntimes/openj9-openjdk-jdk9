@@ -1,0 +1,90 @@
+# ===========================================================================
+# (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+# ===========================================================================
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
+# ===========================================================================
+
+# The main target.
+all :
+
+ifeq (,$(wildcard $(SPEC)))
+  $(error BuildDDR.gmk needs SPEC set to a proper spec.gmk)
+endif
+
+include $(SPEC)
+include $(SRC_ROOT)/make/common/MakeBase.gmk
+include $(SRC_ROOT)/make/common/JavaCompilation.gmk
+include $(SRC_ROOT)/make/common/SetupJavaCompilers.gmk
+
+# Supporting definitions.
+DDR_SUPPORT_DIR := $(SUPPORT_OUTPUTDIR)/ddr
+DDR_VM_SRC_ROOT := $(OPENJ9_TOPDIR)/debugtools/DDR_VM/src
+
+#############################################################################
+
+# Build a jar containing the code generators.
+$(eval $(call SetupJavaCompilation,BUILD_DDR_TOOLS, \
+	SETUP := GENERATE_OLDBYTECODE, \
+	BIN := $(DDR_SUPPORT_DIR)/tools, \
+	CLASSPATH := $(addprefix $(JDK_OUTPUTDIR)/modules/, java.base openj9.dtfj), \
+	SRC := $(DDR_VM_SRC_ROOT), \
+	INCLUDE_FILES := $(addsuffix .java,$(subst .,/, \
+		com.ibm.j9ddr.BytecodeGenerator \
+		com.ibm.j9ddr.CTypeParser \
+		com.ibm.j9ddr.StructureHeader \
+		com.ibm.j9ddr.StructureReader \
+		com.ibm.j9ddr.StructureTypeManager \
+		com.ibm.j9ddr.logging.LoggerNames \
+		com.ibm.j9ddr.tools.FlagStructureList \
+		com.ibm.j9ddr.tools.PointerGenerator \
+		com.ibm.j9ddr.tools.StructureStubGenerator \
+		com.ibm.j9ddr.tools.store.J9DDRStructureStore \
+		com.ibm.j9ddr.tools.store.StructureKey \
+		com.ibm.j9ddr.tools.store.StructureMismatchError \
+		)), \
+	))
+
+#############################################################################
+
+# The superset file is built with the VM.
+DDR_SUPERSET_FILE := $(OUTPUT_ROOT)/vm/superset.dat
+
+# Generate Java pointer classes.
+DDR_POINTERS_MARKER := $(DDR_SUPPORT_DIR)/pointers.done
+
+$(DDR_POINTERS_MARKER) : $(DDR_SUPERSET_FILE) $(BUILD_DDR_TOOLS)
+	@$(ECHO) Generating DDR pointer classes
+	@$(RM) -rf $(DDR_VM_SRC_ROOT)/com/ibm/j9ddr/vm29/pointer/generated/
+	@$(JAVA) -cp $(BUILD_DDR_TOOLS_BIN) com.ibm.j9ddr.tools.PointerGenerator \
+		-f $(dir $(DDR_SUPERSET_FILE)) \
+		-s $(notdir $(DDR_SUPERSET_FILE)) \
+		-p com.ibm.j9ddr.vm29.pointer.generated \
+		-v 29 \
+		-o $(DDR_VM_SRC_ROOT)
+	@$(TOUCH) $@
+
+# Generate Java structure stub classes.
+DDR_STRUCTURES_MARKER := $(DDR_SUPPORT_DIR)/structures.done
+
+$(DDR_STRUCTURES_MARKER) : $(DDR_SUPERSET_FILE) $(BUILD_DDR_TOOLS)
+	@$(ECHO) Generating DDR structure stubs
+	@$(RM) -rf $(DDR_VM_SRC_ROOT)/com/ibm/j9ddr/vm29/structure/
+	@$(JAVA) -cp $(BUILD_DDR_TOOLS_BIN) com.ibm.j9ddr.tools.StructureStubGenerator \
+		-f $(dir $(DDR_SUPERSET_FILE)) \
+		-s $(notdir $(DDR_SUPERSET_FILE)) \
+		-p com.ibm.j9ddr.vm29.structure \
+		-o $(DDR_VM_SRC_ROOT)
+	@$(TOUCH) $@
+
+all : $(DDR_POINTERS_MARKER) $(DDR_STRUCTURES_MARKER)

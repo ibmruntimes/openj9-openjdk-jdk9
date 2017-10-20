@@ -963,6 +963,7 @@ SPEC
 SDKROOT
 XCODEBUILD
 FREEMARKER_JAR
+OPENJ9_ENABLE_DDR
 OPENJ9_GDK_HOME
 OPENJ9_CUDA_HOME
 OPENJ9_ENABLE_CUDA
@@ -1150,6 +1151,7 @@ with_cmake
 with_cuda
 with_gdk
 enable_cuda
+enable_ddr
 with_freemarker_jar
 with_devkit
 with_sys_root
@@ -2009,6 +2011,7 @@ Optional Features:
   --enable-debug          set the debug level to fastdebug (shorthand for
                           --with-debug-level=fastdebug) [disabled]
   --enable-cuda           enable CUDA support [disabled]
+  --enable-ddr            enable DDR support [disabled]
   --enable-headless-only  only build headless (no GUI) support [disabled]
   --enable-full-docs      build complete documentation [enabled if all tools
                           found]
@@ -5224,7 +5227,7 @@ VS_SDK_PLATFORM_NAME_2013=
 # definitions. It is replaced with custom functionality when building
 # custom sources.
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -5263,8 +5266,10 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 
+
+
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1517096419
+DATE_WHEN_GENERATED=1519897402
 
 ###############################################################################
 #
@@ -17651,6 +17656,38 @@ $as_echo "no (default)" >&6; }
   fi
 
 
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ddr" >&5
+$as_echo_n "checking for ddr... " >&6; }
+  # Check whether --enable-ddr was given.
+if test "${enable_ddr+set}" = set; then :
+  enableval=$enable_ddr;
+fi
+
+  if test "x$enable_ddr" = xyes ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (explicitly enabled)" >&5
+$as_echo "yes (explicitly enabled)" >&6; }
+    OPENJ9_ENABLE_DDR=true
+  elif test "x$enable_ddr" = xno ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (explicitly disabled)" >&5
+$as_echo "no (explicitly disabled)" >&6; }
+    OPENJ9_ENABLE_DDR=false
+  elif test "x$enable_ddr" = x ; then
+    if test "x$OPENJ9_PLATFORM_CODE" = xxa64 ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (default for xa64)" >&5
+$as_echo "yes (default for xa64)" >&6; }
+      OPENJ9_ENABLE_DDR=true
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (default)" >&5
+$as_echo "no (default)" >&6; }
+      OPENJ9_ENABLE_DDR=false
+    fi
+  else
+    as_fn_error $? "--enable-ddr accepts no argument" "$LINENO" 5
+  fi
 
 
 

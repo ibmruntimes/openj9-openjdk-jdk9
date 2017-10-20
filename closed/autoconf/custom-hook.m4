@@ -47,6 +47,7 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   OPENJDK_VERSION_DETAILS
   OPENJ9_CONFIGURE_CMAKE
   OPENJ9_CONFIGURE_CUDA
+  OPENJ9_CONFIGURE_DDR
   OPENJ9_CONFIGURE_NUMA
   OPENJ9_THIRD_PARTY_REQUIREMENTS
 ])
@@ -134,6 +135,31 @@ AC_DEFUN([OPENJ9_CONFIGURE_CUDA],
   AC_SUBST(OPENJ9_ENABLE_CUDA)
   AC_SUBST(OPENJ9_CUDA_HOME)
   AC_SUBST(OPENJ9_GDK_HOME)
+])
+
+AC_DEFUN([OPENJ9_CONFIGURE_DDR],
+[
+  AC_MSG_CHECKING([for ddr])
+  AC_ARG_ENABLE([ddr], [AS_HELP_STRING([--enable-ddr], [enable DDR support @<:@disabled@:>@])])
+  if test "x$enable_ddr" = xyes ; then
+    AC_MSG_RESULT([yes (explicitly enabled)])
+    OPENJ9_ENABLE_DDR=true
+  elif test "x$enable_ddr" = xno ; then
+    AC_MSG_RESULT([no (explicitly disabled)])
+    OPENJ9_ENABLE_DDR=false
+  elif test "x$enable_ddr" = x ; then
+    if test "x$OPENJ9_PLATFORM_CODE" = xxa64 ; then
+      AC_MSG_RESULT([yes (default for xa64)])
+      OPENJ9_ENABLE_DDR=true
+    else
+      AC_MSG_RESULT([no (default)])
+      OPENJ9_ENABLE_DDR=false
+    fi
+  else
+    AC_MSG_ERROR([--enable-ddr accepts no argument])
+  fi
+
+  AC_SUBST(OPENJ9_ENABLE_DDR)
 ])
 
 AC_DEFUN([OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU],

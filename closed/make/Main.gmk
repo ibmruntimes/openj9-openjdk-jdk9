@@ -1,10 +1,9 @@
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
-# 
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
-# published by the Free Software Foundation.  
+# published by the Free Software Foundation.
 #
 # This code is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -14,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-# 
 # ===========================================================================
 
 CLEAN_DIRS += vm
@@ -43,5 +41,19 @@ openj9-jdk-image : jdk-image j9vm-build
 
 openj9-jre-image : jre-image j9vm-build
 	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) stage_openj9_jre_image)
+
+ifeq (true,$(OPENJ9_ENABLE_DDR))
+
+.PHONY : openj9.dtfj-ddr-gensrc openj9.dtfj-ddr-jar
+
+openj9.dtfj-ddr-gensrc : j9vm-build $(addsuffix -java, java.base java.desktop openj9.dtfj openj9.traceformat)
+	+$(MAKE) -f $(SRC_ROOT)/closed/make/DDR-gensrc.gmk SPEC=$(SPEC)
+
+openj9.dtfj-ddr-jar : openj9.dtfj-ddr-gensrc
+	+$(MAKE) -f $(SRC_ROOT)/closed/make/DDR-jar.gmk SPEC=$(SPEC)
+
+openj9.dtfj-jmod : openj9.dtfj-ddr-jar
+
+endif # OPENJ9_ENABLE_DDR
 
 ALL_TARGETS += openj9-jdk-image openj9-jre-image
