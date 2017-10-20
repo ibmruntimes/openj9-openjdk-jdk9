@@ -340,7 +340,8 @@ else
 	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
 endif
 	@$(ECHO) OpenJ9 compile complete
-
+	
+	@$(MKDIR) -p $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/java*.properties $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/J9TraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
 	@$(CP) -p $(OUTPUT_ROOT)/vm/OMRTraceFormat.dat $(OUTPUT_ROOT)/support/modules_libs/java.base
