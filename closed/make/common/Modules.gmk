@@ -20,7 +20,6 @@
 BOOT_MODULES += \
     openj9.sharedclasses \
     openj9.jvm \
-    com.ibm.management \
     #
 
 TOP_SRC_DIRS += \
