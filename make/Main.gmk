@@ -701,7 +701,7 @@ else
   endif
 
   # Building java.base-jmod requires all of hotspot to be built.
-  java.base-jmod: j9vm-build j9vm-compose-buildjvm 
+  java.base-jmod: j9vm-compose-buildjvm
 
   # Declare dependencies from <module>-jmod to all other module targets
   # When creating a BUILDJDK, the java compilation has already been done by the
