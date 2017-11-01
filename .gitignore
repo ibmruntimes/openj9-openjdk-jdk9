@@ -1,4 +1,4 @@
 # exclude all source directories
 /build/
-/omr/
-/openj9/
+/omr
+/openj9
