@@ -96,11 +96,16 @@ else
 endif
 
 ifeq ($(OPENJDK_TARGET_OS),windows)
+  # set Visual Studio environment
+  # wrap PATH in quotes as it contains spaces (unix path)
+  # INCLUDE, LIB are already wrapped in quotes (windows paths)
+  EXPORT_MSVS_ENV_VARS := PATH="$(PATH)" INCLUDE=$(INCLUDE) LIB=$(LIB)
   # disable mingw on windows, use default c compiler
   EXPORT_NO_USE_MINGW := NO_USE_MINGW=true
   # set the output directory for shared libraries
   OPENJ9_LIBS_OUTPUT_DIR := bin
 else
+  EXPORT_MSVS_ENV_VARS :=
   EXPORT_NO_USE_MINGW :=
   OPENJ9_LIBS_OUTPUT_DIR := lib
 endif
@@ -312,7 +317,7 @@ run-preprocessors-j9 : stage-j9 \
 		$(OUTPUT_ROOT)/vm/tr.source/jit.version \
 		$(OUTPUT_ROOT)/vm/util/openj9_version_info.h
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
-	(export BOOT_JDK=$(BOOT_JDK) \
+	(export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
 		&& cd $(OUTPUT_ROOT)/vm \
 		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
@@ -333,11 +338,15 @@ run-preprocessors-j9 : stage-j9 \
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
 ifeq ($(OPENJ9_ENABLE_CMAKE),true)
-	(export OMR_DIR=$(OUTPUT_ROOT)/vm/omr OPENJ9_BUILD=true && \
-		cd $(OUTPUT_ROOT)/vm/build && $(MAKE) $(MAKEFLAGS) install \
+	(export OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) \
+		&& cd $(OUTPUT_ROOT)/vm/build \
+		&& $(MAKE) $(MAKEFLAGS) install \
 	)
 else
-	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) && cd $(OUTPUT_ROOT)/vm && $(MAKE) $(MAKEFLAGS) all)
+	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) $(EXPORT_MSVS_ENV_VARS) \
+		&& cd $(OUTPUT_ROOT)/vm \
+		&& $(MAKE) $(MAKEFLAGS) all \
+	)
 endif
 	@$(ECHO) OpenJ9 compile complete
 	
