@@ -970,6 +970,7 @@ OPENJ9_ENABLE_CMAKE
 CMAKE
 OPENJDK_TAG
 OPENJDK_SHA
+OPENJ9_LIBS_SUBDIR
 COMPILER_VERSION_STRING
 OPENJ9_PLATFORM_CODE
 OPENJ9_BUILDSPEC
@@ -1114,6 +1115,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -1411,6 +1413,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1663,6 +1666,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1800,7 +1812,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1953,6 +1965,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -5251,7 +5264,11 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
+<<<<<<< a41d5ef5633e6f6ffc637fe350cd883dea93fb9b
 DATE_WHEN_GENERATED=1515058356
+=======
+DATE_WHEN_GENERATED=1512647666
+>>>>>>> Enable cross-compile for armhf
 
 ###############################################################################
 #
@@ -17114,9 +17131,12 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
 
 # With basic setup done, call the custom early hook.
 
+  # When compiling natively host_cpu and build_cpu are the same. But when
+  # cross compiling we need to work with the host_cpu (which is where the final
+  # JVM will run).
 
   # Convert openjdk cpu names to openj9 names
-  case "$build_cpu" in
+  case "$host_cpu" in
     x86_64)
       OPENJ9_CPU=x86-64
       ;;
@@ -17129,12 +17149,17 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
     powerpc64)
       OPENJ9_CPU=ppc-64
       ;;
+    arm)
+      OPENJ9_CPU=arm
+      ;;
     *)
-      as_fn_error $? "unsupported OpenJ9 cpu $build_cpu" "$LINENO" 5
+      as_fn_error $? "unsupported OpenJ9 cpu $host_cpu" "$LINENO" 5
       ;;
   esac
 
+
   OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
+  OPENJ9_LIBS_SUBDIR=compressedrefs
 
   if test "x$OPENJ9_CPU" = xx86-64; then
     if test "x$OPENJDK_BUILD_OS" = xlinux; then
@@ -17155,9 +17180,14 @@ $as_echo "$as_me: Unknown variant(s) specified: $INVALID_VARIANTS" >&6;}
     OPENJ9_PLATFORM_CODE=xz64
   elif test "x$OPENJ9_CPU" = xppc-64; then
     OPENJ9_PLATFORM_CODE=ap64
+  elif test "x$OPENJ9_CPU" = xarm; then
+    OPENJ9_PLATFORM_CODE=xr32
+    OPENJ9_BUILDSPEC=linux_arm_linaro
+    OPENJ9_LIBS_SUBDIR=default
   else
     as_fn_error $? "Unsupported OpenJ9 cpu ${OPENJ9_CPU}, contact support team!" "$LINENO" 5
   fi
+
 
 
 

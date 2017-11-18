@@ -152,16 +152,24 @@ AC_DEFUN([OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU],
     powerpc64)
       OPENJ9_CPU=ppc-64
       ;;
+    arm)
+      OPENJ9_CPU=arm
+      ;;
     *)
       AC_MSG_ERROR([unsupported OpenJ9 cpu $1])
       ;;
   esac
+  
 ])
 
 AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
 [
-  OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU($build_cpu)
+  # When compiling natively host_cpu and build_cpu are the same. But when
+  # cross compiling we need to work with the host_cpu (which is where the final
+  # JVM will run).
+  OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU($host_cpu)
   OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
+  OPENJ9_LIBS_SUBDIR=compressedrefs
 
   if test "x$OPENJ9_CPU" = xx86-64; then
     if test "x$OPENJDK_BUILD_OS" = xlinux; then
@@ -182,6 +190,10 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
     OPENJ9_PLATFORM_CODE=xz64
   elif test "x$OPENJ9_CPU" = xppc-64; then
     OPENJ9_PLATFORM_CODE=ap64
+  elif test "x$OPENJ9_CPU" = xarm; then
+    OPENJ9_PLATFORM_CODE=xr32
+    OPENJ9_BUILDSPEC=linux_arm_linaro
+    OPENJ9_LIBS_SUBDIR=default
   else
     AC_MSG_ERROR([Unsupported OpenJ9 cpu ${OPENJ9_CPU}, contact support team!])
   fi
@@ -189,6 +201,7 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
   AC_SUBST(OPENJ9_BUILDSPEC)
   AC_SUBST(OPENJ9_PLATFORM_CODE)
   AC_SUBST(COMPILER_VERSION_STRING)
+  AC_SUBST(OPENJ9_LIBS_SUBDIR)
 ])
 
 AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
