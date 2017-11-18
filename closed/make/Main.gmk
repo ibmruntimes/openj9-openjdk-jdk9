@@ -30,7 +30,11 @@ j9vm-build :
 	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR) build-j9)
 
 j9vm-compose-buildjvm : j9vm-build
+ifeq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
 	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) stage_openj9_build_jdk)
+else
+	@$(ECHO) Cross compile detected, skipping stage_openj9_build_jdk
+endif
 
 product-images : openj9-jdk-image openj9-jre-image
 

@@ -61,6 +61,8 @@ OPENJ9_BUILDSPEC        := @OPENJ9_BUILDSPEC@
 # required by JPP
 OPENJ9_PLATFORM_CODE    := @OPENJ9_PLATFORM_CODE@
 
+OPENJ9_LIBS_SUBDIR      := @OPENJ9_LIBS_SUBDIR@
+
 ifeq ($(OPENJDK_TARGET_OS), windows)
   # Set environment variables for Microsoft Visual Studio toolchain.
   # Note that PATH is set in spec.gmk.
