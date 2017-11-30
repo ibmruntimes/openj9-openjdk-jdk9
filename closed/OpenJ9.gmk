@@ -210,7 +210,12 @@ define openj9_copy_tree_impl
   @$(TOUCH) $1/$(OPENJ9_MARKER_FILE)
 endef
 
-$(eval $(call generated_target_rules_build,build_jdk,$(BUILD_JDK)))
+# Temporary fix until we work out how to handle the build_jdk for cross compiles
+ifeq (1,$(OPENJDK_DOCKER_CC_ARM))
+  $(info Cross compilation detected, skipping generated_target_rules_build)
+else
+  $(eval $(call generated_target_rules_build,build_jdk,$(BUILD_JDK)))
+endif
 $(eval $(call generated_target_rules,jdk_image,$(JDK_IMAGE_DIR)))
 $(eval $(call generated_target_rules,jre_image,$(JRE_IMAGE_DIR)))
 
