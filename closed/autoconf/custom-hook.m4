@@ -195,6 +195,12 @@ AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
 [
   OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
   OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags --match "jdk-9*" "${OPENJDK_SHA}"`
+
+  if test "x$OPENJDK_TAG" = x; then
+    LAST_TAGGED_REVISION=`git -C $SRC_ROOT rev-list --tags --max-count=1`
+    OPENJDK_TAG=`git -C $SRC_ROOT describe --abbrev=0 --tags --match "jdk-9*" "${LAST_TAGGED_REVISION}"`
+  fi
+
   AC_SUBST(OPENJDK_SHA)
   AC_SUBST(OPENJDK_TAG)
 ])
