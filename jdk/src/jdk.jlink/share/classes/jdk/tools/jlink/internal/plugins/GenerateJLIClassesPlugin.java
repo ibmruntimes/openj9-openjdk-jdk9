@@ -1,10 +1,4 @@
 /*
- * ===========================================================================
- * (c) Copyright IBM Corp. 2016, 2017 All Rights Reserved
- * ===========================================================================
- */
-
-/*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -108,7 +102,7 @@ public final class GenerateJLIClassesPlugin implements Plugin {
 
     @Override
     public Set<State> getState() {
-        return EnumSet.of(State.DISABLED, State.FUNCTIONAL);
+        return EnumSet.of(State.AUTO_ENABLED, State.FUNCTIONAL);
     }
 
     @Override
