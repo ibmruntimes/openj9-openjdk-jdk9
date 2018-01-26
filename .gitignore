@@ -2,3 +2,5 @@
 /build/
 /omr
 /openj9
+# exclude optional eclipse project file
+/.project
