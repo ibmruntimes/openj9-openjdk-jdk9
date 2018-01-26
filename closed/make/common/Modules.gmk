@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
 # 
 # This code is free software; you can redistribute it and/or modify it
@@ -28,10 +28,11 @@ TOP_SRC_DIRS += \
     #
 
 # Shortly after this makefile fragment is included, Modules.gmk computes the
-# list of modules. Unless a goal is to 'clean' something, we need to force
-# generation of J9JCL java code now, otherwise that list may be incomplete.
-#
-ifeq (,$(findstring clean,$(MAKECMDGOALS)))
+# list of modules. Unless a goal is for 'help' or to 'clean' something, we
+# need to force generation of J9JCL java code now, otherwise that list may
+# be incomplete.
+
+ifeq (,$(filter clean% dist-clean help,$(MAKECMDGOALS)))
 BUILD_OPENJ9_TOOLS     := $(shell ($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) BOOT_JDK=$(BOOT_JDK) build-openj9-tools))
 GENERATE_J9JCL_SOURCES := $(shell ($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) generate-j9jcl-sources))
 endif
