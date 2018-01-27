@@ -5264,11 +5264,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-<<<<<<< a41d5ef5633e6f6ffc637fe350cd883dea93fb9b
-DATE_WHEN_GENERATED=1515058356
-=======
-DATE_WHEN_GENERATED=1512647666
->>>>>>> Enable cross-compile for armhf
+DATE_WHEN_GENERATED=1517096419
 
 ###############################################################################
 #
