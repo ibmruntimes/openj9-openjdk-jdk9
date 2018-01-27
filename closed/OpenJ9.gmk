@@ -83,6 +83,15 @@ OPENJ9_MISC_FILES := \
 OPENJ9_NOTICE_FILES := openj9-notices.html
 OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX)
 
+# For arm cross compiles we need some extra libraries defined for use in the generated target rules section.
+# These are libraries that would normally be copied as part of the build jdk rules, but that section is currently
+# not implemented for arm. Once we have a working build jdk as part of the build it will probably be possible
+# to remove these declarations.
+ifeq (xr32,$(OPENJ9_PLATFORM_CODE))
+OPENJ9_JAVA_BASE_LIBRARIES_ARM := $(OPENJ9_JAVA_BASE_LIBRARIES)
+OPENJ9_SHARED_CLASSES_LIBRARIES_ARM := $(OPENJ9_SHARED_CLASSES_LIBRARIES)
+endif
+
 # openjdk makeflags don't work with openj9/omr native compiles; override with number of cpus which openj9 and omr need supplied
 override MAKEFLAGS := -j $(JOBS)
 
@@ -162,21 +171,17 @@ endef
 # ----------------------
 # param 1 = The jdk/jre directory name
 # param 2 = The jdk/jre directory to add openj9 content
-ifeq (xr32,$(OPENJ9_PLATFORM_CODE))
 define generated_target_rules
 .PHONY : stage_openj9_$1
 $(foreach file,$(OPENJ9_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES),$(eval $(call openj9_copy_file,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 $(foreach file,$(OPENJ9_NOTICE_FILES),$(eval $(call openj9_copy_file,$2/$(file),$(SRC_ROOT)/$(file))))
 $(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
-# Cross compiling for arm doesn't currently build and stage a build jvm, so the mechanism used to
-# install some (but not all) of the libraries in the jdk and jre images doesn't work.
-# Supplement the existing rules with similar ones for the missing libraries
-$(info adding extra libs for arm cross compile)
-$(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
-$(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
-stage_openj9_java_base_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(notdir $(OPENJ9_JAVA_BASE_LIBRARIES)))
-stage_openj9_shared_classes_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(notdir $(OPENJ9_SHARED_CLASSES_LIBRARIES)))
+# Additional libraries needed when cross compiling for arm because we don't create a build JVM
+$(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES_ARM),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+$(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES_ARM),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+stage_openj9_java_base_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(notdir $(OPENJ9_JAVA_BASE_LIBRARIES_ARM)))
+stage_openj9_shared_classes_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(notdir $(OPENJ9_SHARED_CLASSES_LIBRARIES_ARM)))
 stage_openj9_shared_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(OPENJ9_SHARED_LIBRARIES))
 stage_openj9_misc_files_$1 := $(addprefix $2/lib/,$(OPENJ9_MISC_FILES))
 stage_openj9_notice_files_$1 := $(addprefix $2/,$(OPENJ9_NOTICE_FILES))
@@ -191,26 +196,6 @@ stage_openj9_$1 : \
 	$$(stage_openj9_redirector_$1) \
 	$$(stage_openj9_property_files_$1)
 endef
-else	# Not an ARM cross compile
-define generated_target_rules
-.PHONY : stage_openj9_$1
-$(foreach file,$(OPENJ9_SHARED_LIBRARIES),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
-$(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES),$(eval $(call openj9_copy_file,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
-$(foreach file,$(OPENJ9_NOTICE_FILES),$(eval $(call openj9_copy_file,$2/$(file),$(SRC_ROOT)/$(file))))
-$(foreach file,$(OPENJ9_REDIRECTOR),$(eval $(call openj9_copy_file,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
-stage_openj9_shared_libraries_$1 := $(addprefix $2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/,$(OPENJ9_SHARED_LIBRARIES))
-stage_openj9_misc_files_$1 := $(addprefix $2/lib/,$(OPENJ9_MISC_FILES))
-stage_openj9_notice_files_$1 := $(addprefix $2/,$(OPENJ9_NOTICE_FILES))
-stage_openj9_property_files_$1 := $(addprefix $2/lib/,$(OPENJ9_PROPERTY_FILES))
-stage_openj9_redirector_$1 := $2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
-stage_openj9_$1 : \
-	$$(stage_openj9_shared_libraries_$1) \
-	$$(stage_openj9_misc_files_$1) \
-	$$(stage_openj9_notice_files_$1) \
-	$$(stage_openj9_redirector_$1) \
-	$$(stage_openj9_property_files_$1)
-endef
-endif
 
 # openj9_copy_file
 # ----------------
