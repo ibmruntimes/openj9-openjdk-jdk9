@@ -1,10 +1,4 @@
 /*
- * ===========================================================================
- * (c) Copyright IBM Corp. 1999, 2017 All Rights Reserved
- * ===========================================================================
- */
-
-/*
  * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -44,12 +38,6 @@ class VersionProps {
 
     private static final String java_version =
         "@@VERSION_SHORT@@";
-
-    private static final String openjdk_sha =
-        "@@OPENJDK_SHA@@";
-
-    private static final String openjdk_tag =
-        "@@OPENJDK_TAG@@";
 
     private static final String java_runtime_name =
         "@@RUNTIME_NAME@@";
@@ -198,7 +186,7 @@ class VersionProps {
         String java_vm_version = System.getProperty("java.vm.version");
         String java_vm_info    = System.getProperty("java.vm.info");
         ps.println(java_vm_name + " (" + jdk_debug_level + "build " + java_vm_version + ", " +
-                   java_vm_info + "\nOpenJDK  - " + openjdk_sha + " based on " + openjdk_tag + ")");
+                   java_vm_info + ")");
     }
 
 }
