@@ -1,6 +1,6 @@
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2000, 2017 All Rights Reserved
+ * (c) Copyright IBM Corp. 2000, 2018 All Rights Reserved
  * ===========================================================================
  */
 
@@ -34,6 +34,7 @@
 package java.nio;
 
 import java.io.FileDescriptor;
+import java.lang.ref.Reference;
 import jdk.internal.misc.Unsafe;
 import jdk.internal.misc.VM;
 import jdk.internal.ref.Cleaner;
@@ -318,7 +319,7 @@ class Direct$Type$Buffer$RW$$BO$
     public $Type$Buffer put($type$ x) {
 #if[rw]
         unsafe.put$Swaptype$(ix(nextPutIndex()), $swap$($toBits$(x)));
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return this;
 #else[rw]
         throw new ReadOnlyBufferException();
@@ -328,7 +329,7 @@ class Direct$Type$Buffer$RW$$BO$
     public $Type$Buffer put(int i, $type$ x) {
 #if[rw]
         unsafe.put$Swaptype$(ix(checkIndex(i)), $swap$($toBits$(x)));
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return this;
 #else[rw]
         throw new ReadOnlyBufferException();
@@ -355,7 +356,7 @@ class Direct$Type$Buffer$RW$$BO$
             if (srem > rem)
                 throw new BufferOverflowException();
             unsafe.copyMemory(sb.ix(spos), ix(pos), (long)srem << $LG_BYTES_PER_VALUE$);
-            Bits.keepAlive(this);
+            Reference.reachabilityFence(this);
             sb.position(spos + srem);
             position(pos + srem);
         } else if (src.hb != null) {
@@ -422,7 +423,7 @@ class Direct$Type$Buffer$RW$$BO$
         int rem = (pos <= lim ? lim - pos : 0);
 
         unsafe.copyMemory(ix(pos), ix(0), (long)rem << $LG_BYTES_PER_VALUE$);
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         position(rem);
         limit(capacity());
         discardMark();
@@ -510,7 +511,7 @@ class Direct$Type$Buffer$RW$$BO$
     void _put(int i, byte b) {                  // package-private
 #if[rw]
         unsafe.putByte(address + i, b);
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
 #else[rw]
         throw new ReadOnlyBufferException();
 #end[rw]

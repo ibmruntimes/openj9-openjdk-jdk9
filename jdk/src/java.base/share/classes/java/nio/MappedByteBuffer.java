@@ -1,6 +1,6 @@
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2000, 2017 All Rights Reserved
+ * (c) Copyright IBM Corp. 2000, 2018 All Rights Reserved
  * ===========================================================================
  */
 
@@ -32,6 +32,7 @@
 package java.nio;
 
 import java.io.FileDescriptor;
+import java.lang.ref.Reference;
 import jdk.internal.misc.Unsafe;
 
 /**
@@ -169,7 +170,7 @@ public abstract class MappedByteBuffer
         // is computed as we go along to prevent the compiler from otherwise
         // considering the loop as dead code.
         Unsafe unsafe = Unsafe.getUnsafe();
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         int ps = Bits.pageSize();
         int count = Bits.pageCount(length);
         long a = mappingAddress(offset);
