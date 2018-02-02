@@ -28,8 +28,12 @@ ifeq (,$(BUILD_ID))
   BUILD_ID := 000000
 endif
 
+OPENJ9_BRANCH    := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --abbrev-ref HEAD)
 OPENJ9_SHA    := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --short HEAD)
 OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
+ifeq (,$(OPENJ9_BRANCH))
+  $(error Could not determine OpenJ9 Branch)
+endif
 ifeq (,$(OPENJ9_SHA))
   $(error Could not determine OpenJ9 SHA)
 endif
@@ -290,6 +294,8 @@ OPENJ9_VERSION_VARS := \
 	PRODUCT_NAME \
 	USERNAME \
 	VERSION_STRING \
+	OPENJ9_BRANCH \
+	OPENJ9_SHA \
 	#
 
 OPENJ9_VERSION_SCRIPT := \
