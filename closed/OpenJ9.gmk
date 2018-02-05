@@ -28,14 +28,21 @@ ifeq (,$(BUILD_ID))
   BUILD_ID := 000000
 endif
 
-OPENJ9_BRANCH    := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --abbrev-ref HEAD)
+# find the closest tag name
+OPENJ9_TAG    := $(shell git -C $(OPENJ9_TOPDIR)    describe --abbrev=0)
 OPENJ9_SHA    := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --short HEAD)
 OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
-ifeq (,$(OPENJ9_BRANCH))
-  $(error Could not determine OpenJ9 Branch)
-endif
 ifeq (,$(OPENJ9_SHA))
   $(error Could not determine OpenJ9 SHA)
+endif
+ifeq (,$(OPENJ9_TAG))
+  OPENJ9_BRANCH := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --abbrev-ref HEAD)
+  ifeq (,$(OPENJ9_BRANCH))
+    $(error Could not determine OpenJ9 Branch)
+  endif
+  OPENJ9_VERSION_STRING := $(OPENJ9_BRANCH)-$(OPENJ9_SHA)
+else
+  OPENJ9_VERSION_STRING := $(OPENJ9_TAG)
 endif
 ifeq (,$(OPENJ9OMR_SHA))
   $(error Could not determine OMR SHA)
@@ -294,19 +301,18 @@ OPENJ9_VERSION_VARS := \
 	PRODUCT_NAME \
 	USERNAME \
 	VERSION_STRING \
-	OPENJ9_BRANCH \
-	OPENJ9_SHA \
+	OPENJ9_VERSION_STRING \
 	#
 
 OPENJ9_VERSION_SCRIPT := \
 	$(foreach var,$(OPENJ9_VERSION_VARS),-e "s|@${var}@|$(value $(var))|g")
 
-$(OUTPUT_ROOT)/vm/util/openj9_version_info.h : $(SRC_ROOT)/closed/openj9_version_info.h.in
+$(OUTPUT_ROOT)/vm/include/openj9_version_info.h : $(SRC_ROOT)/closed/openj9_version_info.h.in
 	@$(MKDIR) -p $(@D)
 	@$(SED) $(OPENJ9_VERSION_SCRIPT) > $@ < $(SRC_ROOT)/closed/openj9_version_info.h.in
 
 # update if values change
-$(OUTPUT_ROOT)/vm/util/openj9_version_info.h : \
+$(OUTPUT_ROOT)/vm/include/openj9_version_info.h : \
 	$(foreach var,$(OPENJ9_VERSION_VARS),$(call DependOnVariable, $(var)))
 
 # Only update version files when the SHAs change.
@@ -321,7 +327,7 @@ $(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9OMR_SH
 run-preprocessors-j9 : stage-j9 \
 		$(OUTPUT_ROOT)/vm/omr/OMR_VERSION_STRING \
 		$(OUTPUT_ROOT)/vm/compiler/jit.version \
-		$(OUTPUT_ROOT)/vm/util/openj9_version_info.h
+		$(OUTPUT_ROOT)/vm/include/openj9_version_info.h
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
 	(export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
 		&& cd $(OUTPUT_ROOT)/vm \
