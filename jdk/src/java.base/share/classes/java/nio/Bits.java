@@ -1,6 +1,6 @@
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2000, 2017 All Rights Reserved
+ * (c) Copyright IBM Corp. 2000, 2018 All Rights Reserved
  * ===========================================================================
  */
 
@@ -97,10 +97,6 @@ class Bits {                            // package-private
         return (int)(size + (long)pageSize() - 1L) / pageSize();
     }
     
-    static void keepAlive(Object o) {                                           //IBM-nio_vad
-    	// Do nothing. This is just to ptovide a chance for JIT to optimize.    //IBM-nio_vad
-    }                                                                           //IBM-nio_vad
-                                                                                //IBM-nio_vad
     private static boolean unaligned = unsafe.unalignedAccess();
 
     static boolean unaligned() {

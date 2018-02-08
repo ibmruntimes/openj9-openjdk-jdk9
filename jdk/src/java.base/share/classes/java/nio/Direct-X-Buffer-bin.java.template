@@ -1,6 +1,6 @@
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2000, 2017 All Rights Reserved
+ * (c) Copyright IBM Corp. 2000, 2018 All Rights Reserved
  * ===========================================================================
  */
 
@@ -40,19 +40,19 @@ class XXX {
     private $type$ get$Type$(long a) {
         $memtype$ x = unsafe.get$Memtype$Unaligned(null, a, bigEndian);
         $type$ y = $fromBits$(x);
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return y;
     }
 
     public $type$ get$Type$() {
         $type$ y = get$Type$(ix(nextGetIndex($BYTES_PER_VALUE$)));
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return y;
     }
 
     public $type$ get$Type$(int i) {
         $type$ y = get$Type$(ix(checkIndex(i, $BYTES_PER_VALUE$)));
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return y;
     }
 
@@ -62,7 +62,7 @@ class XXX {
 #if[rw]
         $memtype$ y = $toBits$(x);
         unsafe.put$Memtype$Unaligned(null, a, y, bigEndian);
-        Bits.keepAlive(this);
+        Reference.reachabilityFence(this);
         return this;
 #else[rw]
         throw new ReadOnlyBufferException();
