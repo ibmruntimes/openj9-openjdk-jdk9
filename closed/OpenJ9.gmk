@@ -28,13 +28,13 @@ ifeq (,$(BUILD_ID))
   BUILD_ID := 000000
 endif
 
-# find the closest tag name
-OPENJ9_TAG    := $(shell git -C $(OPENJ9_TOPDIR)    describe --abbrev=0)
 OPENJ9_SHA    := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --short HEAD)
 OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
 ifeq (,$(OPENJ9_SHA))
   $(error Could not determine OpenJ9 SHA)
 endif
+# find the tag associated with OPENJ9_SHA and remove stderr output in case there is no tag found
+OPENJ9_TAG := $(shell git -C $(OPENJ9_TOPDIR) describe --exact-match $(OPENJ9_SHA) 2>/dev/null)
 ifeq (,$(OPENJ9_TAG))
   OPENJ9_BRANCH := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --abbrev-ref HEAD)
   ifeq (,$(OPENJ9_BRANCH))
