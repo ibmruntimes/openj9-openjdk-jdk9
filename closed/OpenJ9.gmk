@@ -109,8 +109,10 @@ ifeq ($(OPENJDK_TARGET_OS),windows)
   # wrap PATH in quotes as it contains spaces (unix path)
   # INCLUDE, LIB are already wrapped in quotes (windows paths)
   EXPORT_MSVS_ENV_VARS := PATH="$(PATH)" INCLUDE=$(INCLUDE) LIB=$(LIB)
-  # disable mingw on windows, use default c compiler
-  EXPORT_NO_USE_MINGW := NO_USE_MINGW=true
+  # On Windows, the mingw compiler is used for certain files such as 
+  # the bytecode interpreter.
+  # Uncomment the following line to use the default compiler throughout.
+  # EXPORT_NO_USE_MINGW := NO_USE_MINGW=true
   # set the output directory for shared libraries
   OPENJ9_LIBS_OUTPUT_DIR := bin
 else
