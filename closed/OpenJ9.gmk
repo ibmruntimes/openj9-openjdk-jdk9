@@ -33,7 +33,7 @@ OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
 ifeq (,$(OPENJ9_SHA))
   $(error Could not determine OpenJ9 SHA)
 endif
-# find the tag associated with OPENJ9_SHA and remove stderr output in case there is no tag found
+# Find OpenJ9 tag associated with current commit specified by OPENJ9_SHA and remove stderr output in case there is no such tag found
 OPENJ9_TAG := $(shell git -C $(OPENJ9_TOPDIR) describe --exact-match $(OPENJ9_SHA) 2>/dev/null)
 ifeq (,$(OPENJ9_TAG))
   OPENJ9_BRANCH := $(shell git -C $(OPENJ9_TOPDIR)    rev-parse --abbrev-ref HEAD)
