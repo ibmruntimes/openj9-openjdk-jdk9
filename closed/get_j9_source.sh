@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -178,7 +178,7 @@ for i in "${!git_urls[@]}" ; do
 		echo
 
 		cd ${i}
-		git checkout ${shas[$i]}
+		git checkout -B ${branches[$i]} ${shas[$i]}
 		cd - > /dev/null
 	fi
 done
