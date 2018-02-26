@@ -172,10 +172,10 @@ $(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES), \
 	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/java.base/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/openj9.sharedclasses/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/openj9.sharedclasses/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_MANAGEMENT_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/java.management/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/java.management/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 endef
 
@@ -207,7 +207,7 @@ ifneq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
 # to remove these declarations.
 
 $(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES), \
 	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
