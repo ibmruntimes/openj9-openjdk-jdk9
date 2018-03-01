@@ -346,9 +346,11 @@ $(OUTPUT_ROOT)/vm/include/openj9_version_info.h : $(SRC_ROOT)/closed/openj9_vers
 	@$(MKDIR) -p $(@D)
 	@$(SED) $(OPENJ9_VERSION_SCRIPT) > $@ < $<
 
-# update if values change
-$(OUTPUT_ROOT)/vm/include/openj9_version_info.h : \
-	$(foreach var,$(OPENJ9_VERSION_VARS),$(call DependOnVariable, $(var)))
+# capture values for use with DependOnVariable
+OPENJ9_VERSION_MAP := $(foreach var,$(sort $(OPENJ9_VERSION_VARS)),$(var)='$(value $(var))'))
+
+# update if the map changes
+$(OUTPUT_ROOT)/vm/include/openj9_version_info.h : $(call DependOnVariable,OPENJ9_VERSION_MAP)
 
 # Only update version files when the SHAs change.
 $(OUTPUT_ROOT)/vm/compiler/jit.version : $(call DependOnVariable, OPENJ9_SHA)
