@@ -431,7 +431,7 @@ $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 		com.ibm.jpp.commandline.CommandlineBuilder \
 			-verdict \
 			-baseDir "$(JPP_BASE_DIR)/" \
-			-config SIDECAR19-SE-B175 \
+			-config SIDECAR19-SE-OPENJ9 \
 			-srcRoot jcl/ \
 			-xml jpp_configuration.xml \
 			-dest "$(JPP_DEST)" \
