@@ -1,10 +1,9 @@
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
-# 
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
-# published by the Free Software Foundation.  
+# published by the Free Software Foundation.
 #
 # This code is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -14,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-# 
 # ===========================================================================
 
 # This macro is called to allow inclusion of closed source counterparts.
@@ -44,6 +42,9 @@ endif
 ifneq (,@OPENJ9_GDK_HOME@)
 export GDK_HOME         := @OPENJ9_GDK_HOME@
 endif
+
+## DDR
+OPENJ9_ENABLE_DDR       := @OPENJ9_ENABLE_DDR@
 
 # for constructing version output
 COMPILER_VERSION_STRING := @COMPILER_VERSION_STRING@

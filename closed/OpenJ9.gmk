@@ -277,7 +277,13 @@ endif
 SPEC_SED_SCRIPT := -e 's/gcc-4.6/gcc/g'
 
 # Adjust DDR enablement flags.
-SPEC_SED_SCRIPT += $(call SedDisable,module_ddr)
+ifeq (true,$(OPENJ9_ENABLE_DDR))
+  FEATURE_SED_SCRIPT += $(call SedEnable,opt_useOmrDdr)
+  SPEC_SED_SCRIPT    += $(call SedEnable,module_ddr)
+else
+  FEATURE_SED_SCRIPT += $(call SedDisable,opt_useOmrDdr)
+  SPEC_SED_SCRIPT    += $(call SedDisable,module_ddr)
+endif
 
 # Disable windows rebase.
 SPEC_SED_SCRIPT += $(call SedDisable,uma_windowsRebase)
@@ -412,6 +418,12 @@ endif
 	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/server
 	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+
+ifeq (true,$(OPENJ9_ENABLE_DDR))
+	@$(ECHO) Copying j9ddr.dat
+	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/$(OPENJ9_LIBS_SUBDIR)
+	@$(CP) -p $(OUTPUT_ROOT)/vm/j9ddr.dat $(MODULES_LIBS_DIR)/java.base/$(OPENJ9_LIBS_SUBDIR)/
+endif
 
 J9JCL_SOURCES_DONEFILE := $(MAKESUPPORT_OUTPUTDIR)/j9jcl_sources.done
 
