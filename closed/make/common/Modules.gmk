@@ -1,10 +1,9 @@
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
-# 
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
-# published by the Free Software Foundation.  
+# published by the Free Software Foundation.
 #
 # This code is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -14,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-# 
 # ===========================================================================
 
 BOOT_MODULES += \
@@ -27,12 +25,12 @@ TOP_SRC_DIRS += \
     $(SRC_ROOT)/closed/src \
     #
 
-# Shortly after this makefile fragment is included, Modules.gmk computes the
-# list of modules. Unless a goal is for 'help' or to 'clean' something, we
-# need to force generation of J9JCL java code now, otherwise that list may
-# be incomplete.
+# An early part of the build process involves computing the list of main targets.
+# Those targets include {module}-java, {module}-jmod, etc. which requires that the
+# set of module names be known. We must build and run the preprocessor to ensure the
+# modules specific to OpenJ9 will be found and included in that set.
 
-ifeq (,$(filter clean% dist-clean help,$(MAKECMDGOALS)))
-BUILD_OPENJ9_TOOLS     := $(shell ($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) BOOT_JDK=$(BOOT_JDK) build-openj9-tools))
-GENERATE_J9JCL_SOURCES := $(shell ($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) generate-j9jcl-sources))
+ifneq (,$(findstring create-main-targets-include,$(MAKECMDGOALS)))
+BUILD_OPENJ9_TOOLS     := $(shell $(MAKE) -C $(SRC_ROOT)/closed -f OpenJ9.gmk SPEC=$(SPEC) BOOT_JDK=$(BOOT_JDK) build-openj9-tools)
+GENERATE_J9JCL_SOURCES := $(shell $(MAKE) -C $(SRC_ROOT)/closed -f OpenJ9.gmk SPEC=$(SPEC) generate-j9jcl-sources)
 endif
