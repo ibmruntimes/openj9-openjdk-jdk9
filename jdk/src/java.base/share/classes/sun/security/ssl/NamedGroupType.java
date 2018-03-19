@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,21 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package jdk.internal.misc;
 
-import java.io.ObjectStreamClass;
+package sun.security.ssl;
 
-/**
- * A callback used by {@code ObjectInputStream} to do descriptor validation.
- *
- * @author sjiang
- */
-public interface ObjectStreamClassValidator {
-    /**
-     * This method will be called by ObjectInputStream to
-     * check a descriptor just before creating an object described by this descriptor.
-     * The object will not be created if this method throws a {@code RuntimeException}.
-     * @param descriptor descriptor to be checked.
-     */
-    public void validateDescriptor(ObjectStreamClass descriptor);
+enum NamedGroupType {
+    NAMED_GROUP_ECDHE,          // Elliptic Curve Groups (ECDHE)
+    NAMED_GROUP_FFDHE,          // Finite Field Groups (DHE)
+    NAMED_GROUP_NONE            // No predefined named group
 }
