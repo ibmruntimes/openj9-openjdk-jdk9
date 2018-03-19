@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1996, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,12 +30,6 @@ import java.io.*;
 import java.util.*;
 import java.security.*;
 import java.nio.ByteBuffer;
-import java.security.NoSuchAlgorithmException;
-import java.security.AccessController;
-import java.security.AlgorithmConstraints;
-import java.security.AccessControlContext;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
 import java.util.function.BiFunction;
 
 import javax.crypto.*;
@@ -52,6 +46,7 @@ import sun.security.ssl.CipherSuite.*;
 
 import static sun.security.ssl.CipherSuite.PRF.*;
 import static sun.security.ssl.CipherSuite.CipherType.*;
+import static sun.security.ssl.NamedGroupType.*;
 
 /**
  * Handshaker ... processes handshake records from an SSL V3.0
@@ -224,6 +219,20 @@ abstract class Handshaker {
             Debug.getBooleanProperty(
                 "jdk.tls.rejectClientInitiatedRenegotiation", false);
 
+    // To switch off the extended_master_secret extension.
+    static final boolean useExtendedMasterSecret;
+
+    // Allow session resumption without Extended Master Secret extension.
+    static final boolean allowLegacyResumption =
+            Debug.getBooleanProperty("jdk.tls.allowLegacyResumption", true);
+
+    // Allow full handshake without Extended Master Secret extension.
+    static final boolean allowLegacyMasterSecret =
+            Debug.getBooleanProperty("jdk.tls.allowLegacyMasterSecret", true);
+
+    // Is it requested to use extended master secret extension?
+    boolean requestedToUseEMS = false;
+
     // need to dispose the object when it is invalidated
     boolean invalidated;
 
@@ -231,6 +240,24 @@ abstract class Handshaker {
      * Is this an instance for Datagram Transport Layer Security (DTLS)?
      */
     final boolean isDTLS;
+
+    // Is the extended_master_secret extension supported?
+    static {
+        boolean supportExtendedMasterSecret = true;
+        try {
+            KeyGenerator kg =
+                JsseJce.getKeyGenerator("SunTlsExtendedMasterSecret");
+        } catch (NoSuchAlgorithmException nae) {
+            supportExtendedMasterSecret = false;
+        }
+
+        if (supportExtendedMasterSecret) {
+            useExtendedMasterSecret = Debug.getBooleanProperty(
+                    "jdk.tls.useExtendedMasterSecret", true);
+        } else {
+            useExtendedMasterSecret = false;
+        }
+    }
 
     Handshaker(SSLSocketImpl c, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -242,7 +269,7 @@ abstract class Handshaker {
         init(context, enabledProtocols, needCertVerify, isClient,
             activeProtocolVersion, isInitialHandshake, secureRenegotiation,
             clientVerifyData, serverVerifyData);
-    }
+   }
 
     Handshaker(SSLEngineImpl engine, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -685,42 +712,14 @@ abstract class Handshaker {
             ArrayList<CipherSuite> suites = new ArrayList<>();
             if (!(activeProtocols.collection().isEmpty()) &&
                     activeProtocols.min.v != ProtocolVersion.NONE.v) {
-                boolean checkedCurves = false;
-                boolean hasCurves = false;
+                Map<NamedGroupType, Boolean> cachedStatus =
+                        new EnumMap<>(NamedGroupType.class);
                 for (CipherSuite suite : enabledCipherSuites.collection()) {
-                    if (!activeProtocols.min.obsoletes(suite) &&
+                    if (suite.isAvailable() &&
+                            (!activeProtocols.min.obsoletes(suite)) &&
                             activeProtocols.max.supports(suite)) {
-                        if (algorithmConstraints.permits(
-                                EnumSet.of(CryptoPrimitive.KEY_AGREEMENT),
-                                suite.name, null)) {
-
-                            boolean available = true;
-                            if (suite.keyExchange.isEC) {
-                                if (!checkedCurves) {
-                                    hasCurves = EllipticCurvesExtension
-                                        .hasActiveCurves(algorithmConstraints);
-                                    checkedCurves = true;
-
-                                    if (!hasCurves && debug != null &&
-                                                Debug.isOn("verbose")) {
-                                        System.out.println(
-                                            "No available elliptic curves");
-                                    }
-                                }
-
-                                available = hasCurves;
-
-                                if (!available && debug != null &&
-                                        Debug.isOn("verbose")) {
-                                    System.out.println(
-                                        "No active elliptic curves, ignore " +
-                                        suite);
-                                }
-                            }
-
-                            if (available) {
-                                suites.add(suite);
-                            }
+                        if (isActivatable(suite, cachedStatus)) {
+                            suites.add(suite);
                         }
                     } else if (debug != null && Debug.isOn("verbose")) {
                         if (activeProtocols.min.obsoletes(suite)) {
@@ -779,46 +778,15 @@ abstract class Handshaker {
                 }
 
                 boolean found = false;
+                Map<NamedGroupType, Boolean> cachedStatus =
+                        new EnumMap<>(NamedGroupType.class);
                 for (CipherSuite suite : enabledCipherSuites.collection()) {
                     if (suite.isAvailable() && (!protocol.obsoletes(suite)) &&
                                                protocol.supports(suite)) {
-                        if (algorithmConstraints.permits(
-                                EnumSet.of(CryptoPrimitive.KEY_AGREEMENT),
-                                suite.name, null)) {
-
-                            boolean available = true;
-                            if (suite.keyExchange.isEC) {
-                                if (!checkedCurves) {
-                                    hasCurves = EllipticCurvesExtension
-                                        .hasActiveCurves(algorithmConstraints);
-                                    checkedCurves = true;
-
-                                    if (!hasCurves && debug != null &&
-                                                Debug.isOn("verbose")) {
-                                        System.out.println(
-                                            "No activated elliptic curves");
-                                    }
-                                }
-
-                                available = hasCurves;
-
-                                if (!available && debug != null &&
-                                        Debug.isOn("verbose")) {
-                                    System.out.println(
-                                        "No active elliptic curves, ignore " +
-                                        suite + " for " + protocol);
-                                }
-                            }
-
-                            if (available) {
-                                protocols.add(protocol);
-                                found = true;
-                                break;
-                            }
-                        } else if (debug != null && Debug.isOn("verbose")) {
-                            System.out.println(
-                                "Ignoring disabled cipher suite: " + suite +
-                                 " for " + protocol);
+                        if (isActivatable(suite, cachedStatus)) {
+                            protocols.add(protocol);
+                            found = true;
+                            break;
                         }
                     } else if (debug != null && Debug.isOn("verbose")) {
                         System.out.println(
@@ -826,6 +794,7 @@ abstract class Handshaker {
                                  " for " + protocol);
                     }
                 }
+
                 if (!found && (debug != null) && Debug.isOn("handshake")) {
                     System.out.println(
                         "No available cipher suite for " + protocol);
@@ -840,6 +809,43 @@ abstract class Handshaker {
         }
 
         return activeProtocols;
+    }
+
+    private boolean isActivatable(CipherSuite suite,
+            Map<NamedGroupType, Boolean> cachedStatus) {
+
+        if (algorithmConstraints.permits(
+                EnumSet.of(CryptoPrimitive.KEY_AGREEMENT), suite.name, null)) {
+            boolean available = true;
+            NamedGroupType groupType = suite.keyExchange.groupType;
+            if (groupType != NAMED_GROUP_NONE) {
+                Boolean checkedStatus = cachedStatus.get(groupType);
+                if (checkedStatus == null) {
+                    available = SupportedGroupsExtension.isActivatable(
+                            algorithmConstraints, groupType);
+                    cachedStatus.put(groupType, available);
+
+                    if (!available && debug != null && Debug.isOn("verbose")) {
+                        System.out.println("No activated named group");
+                    }
+                } else {
+                    available = checkedStatus.booleanValue();
+                }
+
+                if (!available && debug != null && Debug.isOn("verbose")) {
+                    System.out.println(
+                        "No active named group, ignore " + suite);
+                }
+
+                return available;
+            } else {
+                return true;
+            }
+        } else if (debug != null && Debug.isOn("verbose")) {
+            System.out.println("Ignoring disabled cipher suite: " + suite);
+        }
+
+        return false;
     }
 
     /**
@@ -1240,6 +1246,7 @@ abstract class Handshaker {
      * SHA1 hashes are of (different) constant strings, the pre-master
      * secret, and the nonces provided by the client and the server.
      */
+    @SuppressWarnings("deprecation")
     private SecretKey calculateMasterSecret(SecretKey preMasterSecret,
             ProtocolVersion requestedVersion) {
 
@@ -1290,11 +1297,37 @@ abstract class Handshaker {
         int prfHashLength = prf.getPRFHashLength();
         int prfBlockSize = prf.getPRFBlockSize();
 
-        @SuppressWarnings("deprecation")
-        TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
-                preMasterSecret, (majorVersion & 0xFF), (minorVersion & 0xFF),
-                clnt_random.random_bytes, svr_random.random_bytes,
-                prfHashAlg, prfHashLength, prfBlockSize);
+        TlsMasterSecretParameterSpec spec;
+        if (session.getUseExtendedMasterSecret()) {
+            // reset to use the extended master secret algorithm
+            masterAlg = "SunTlsExtendedMasterSecret";
+
+            byte[] sessionHash = null;
+            if (protocolVersion.useTLS12PlusSpec()) {
+                sessionHash = handshakeHash.getFinishedHash();
+            } else {
+                // TLS 1.0/1.1, DTLS 1.0
+                sessionHash = new byte[36];
+                try {
+                    handshakeHash.getMD5Clone().digest(sessionHash, 0, 16);
+                    handshakeHash.getSHAClone().digest(sessionHash, 16, 20);
+                } catch (DigestException de) {
+                    throw new ProviderException(de);
+                }
+            }
+
+            spec = new TlsMasterSecretParameterSpec(
+                    preMasterSecret,
+                    (majorVersion & 0xFF), (minorVersion & 0xFF),
+                    sessionHash,
+                    prfHashAlg, prfHashLength, prfBlockSize);
+        } else {
+            spec = new TlsMasterSecretParameterSpec(
+                    preMasterSecret,
+                    (majorVersion & 0xFF), (minorVersion & 0xFF),
+                    clnt_random.random_bytes, svr_random.random_bytes,
+                    prfHashAlg, prfHashLength, prfBlockSize);
+        }
 
         try {
             KeyGenerator kg = JsseJce.getKeyGenerator(masterAlg);

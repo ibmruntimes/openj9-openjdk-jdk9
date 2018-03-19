@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -115,7 +115,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * The purpose of this class is to co-ordinate the construction of a
@@ -419,6 +418,8 @@ public class XSDHandler {
     private String fDefer;
     private String fPrefer;
     private String fResolve;
+
+    private boolean fOverrideDefaultParser;
 
     //************ Traversers **********
     XSDAttributeGroupTraverser fAttributeGroupTraverser;
@@ -2237,7 +2238,8 @@ public class XSDHandler {
                 XSDKey key = null;
                 String schemaId = null;
                 if (referType != XSDDescription.CONTEXT_PREPARSE) {
-                    schemaId = XMLEntityManager.expandSystemId(inputSource.getSystemId(), schemaSource.getBaseSystemId(), false);
+                    schemaId = XMLEntityManager.expandSystemId(inputSource.getSystemId(),
+                            schemaSource.getBaseSystemId(), false);
                     key = new XSDKey(schemaId, referType, schemaNamespace);
                     if ((schemaElement = fTraversed.get(key)) != null) {
                         fLastSchemaWasDuplicate = true;
@@ -2253,14 +2255,9 @@ public class XSDHandler {
                     catch (SAXException se) {}
                 }
                 else {
-                    try {
-                        parser = XMLReaderFactory.createXMLReader();
-                    }
-                    // If something went wrong with the factory
-                    // just use our own SAX parser.
-                    catch (SAXException se) {
-                        parser = new SAXParser();
-                    }
+                    parser = JdkXmlUtils.getXMLReader(fOverrideDefaultParser,
+                            fSecurityManager.isSecureProcessing());
+
                     try {
                         parser.setFeature(NAMESPACE_PREFIXES, true);
                         namespacePrefixes = true;
@@ -3618,6 +3615,9 @@ public class XSDHandler {
         fAccessExternalSchema = fSecurityPropertyMgr.getValue(
                 XMLSecurityPropertyManager.Property.ACCESS_EXTERNAL_SCHEMA);
 
+        fOverrideDefaultParser = componentManager.getFeature(JdkXmlUtils.OVERRIDE_PARSER);
+        fSchemaParser.setFeature(JdkXmlUtils.OVERRIDE_PARSER, fOverrideDefaultParser);
+        fEntityManager.setFeature(JdkXmlUtils.OVERRIDE_PARSER, fOverrideDefaultParser);
         // Passing the Catalog settings to the parser
         fUseCatalog = componentManager.getFeature(XMLConstants.USE_CATALOG);
         fSchemaParser.setFeature(XMLConstants.USE_CATALOG, fUseCatalog);
