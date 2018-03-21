@@ -148,13 +148,16 @@ AC_DEFUN([OPENJ9_CONFIGURE_DDR],
     AC_MSG_RESULT([no (explicitly disabled)])
     OPENJ9_ENABLE_DDR=false
   elif test "x$enable_ddr" = x ; then
-    if test "x$OPENJ9_PLATFORM_CODE" = xxa64 ; then
-      AC_MSG_RESULT([yes (default for xa64)])
-      OPENJ9_ENABLE_DDR=true
-    else
-      AC_MSG_RESULT([no (default)])
-      OPENJ9_ENABLE_DDR=false
-    fi
+    case "$OPENJ9_PLATFORM_CODE" in
+      xa64|xl64|xz64)
+        AC_MSG_RESULT([yes (default for $OPENJ9_PLATFORM_CODE)])
+        OPENJ9_ENABLE_DDR=true
+        ;;
+      *)
+        AC_MSG_RESULT([no (default for $OPENJ9_PLATFORM_CODE)])
+        OPENJ9_ENABLE_DDR=false
+        ;;
+    esac
   else
     AC_MSG_ERROR([--enable-ddr accepts no argument])
   fi
@@ -185,7 +188,6 @@ AC_DEFUN([OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU],
       AC_MSG_ERROR([unsupported OpenJ9 cpu $1])
       ;;
   esac
-  
 ])
 
 AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
