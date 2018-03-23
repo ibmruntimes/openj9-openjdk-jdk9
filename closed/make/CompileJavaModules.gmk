@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
 # 
 # This code is free software; you can redistribute it and/or modify it
@@ -17,5 +17,6 @@
 # 
 # ===========================================================================
 
-java.base_COPY += ExternalMessages.properties ibm_gpu_thresholds.properties
+java.base_COPY += ExternalMessages.properties
+openj9.gpu_COPY += ibm_gpu_thresholds.properties
 
