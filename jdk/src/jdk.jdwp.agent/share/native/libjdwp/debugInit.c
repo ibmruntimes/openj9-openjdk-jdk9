@@ -1,3 +1,25 @@
+/*******************************************************************************
+ * (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which accompanies this
+ * distribution and is available at https://www.eclipse.org/legal/epl-2.0/
+ * or the Apache License, Version 2.0 which accompanies this distribution and
+ * is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * This Source Code may also be made available under the following
+ * Secondary Licenses when the conditions for such availability set
+ * forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
+ * General Public License, version 2 with the GNU Classpath
+ * Exception [1] and GNU General Public License, version 2 with the
+ * OpenJDK Assembly Exception [2].
+ *
+ * [1] https://www.gnu.org/software/classpath/license.html
+ * [2] http://openjdk.java.net/legal/assembly-exception.html
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+ *******************************************************************************/
+
 /*
  * Copyright (c) 1998, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -58,6 +80,7 @@
 static jboolean vmInitialized;
 static jrawMonitorID initMonitor;
 static jboolean initComplete;
+static jboolean VMInitComplete;
 static jbyte currentSessionID;
 
 /*
@@ -434,8 +457,9 @@ cbEarlyVMInit(jvmtiEnv *jvmti_env, JNIEnv *env, jthread thread)
     if ( gdata->vmDead ) {
         EXIT_ERROR(AGENT_ERROR_INTERNAL,"VM dead at VM_INIT time");
     }
-    if (initOnStartup)
+    if (initOnStartup) {
         initialize(env, thread, EI_VM_INIT);
+}
     vmInitialized = JNI_TRUE;
     LOG_MISC(("END cbEarlyVMInit"));
 }
@@ -615,6 +639,41 @@ debugInit_waitInitComplete(void)
     debugMonitorExit(initMonitor);
 }
 
+void
+signalVMInitComplete(void)
+{
+    /*
+     * VM Initialization is complete
+     */
+    LOG_MISC(("signal VM initialization complete"));
+    debugMonitorEnter(initMonitor);
+    VMInitComplete = JNI_TRUE;
+    debugMonitorNotifyAll(initMonitor);
+    debugMonitorExit(initMonitor);
+}
+
+/*
+ * Determine if VM initialization is complete.
+ */
+jboolean
+debugInit_isVMInitComplete(void)
+{
+    return VMInitComplete;
+}
+
+/*
+ * Wait for VM initialization to complete.
+ */
+void
+debugInit_waitVMInitComplete(void)
+{
+    debugMonitorEnter(initMonitor);
+    while (!VMInitComplete) {
+        debugMonitorWait(initMonitor);
+    }
+    debugMonitorExit(initMonitor);
+}
+
 /* All process exit() calls come from here */
 void
 forceExit(int exit_code)
@@ -670,6 +729,7 @@ initialize(JNIEnv *env, jthread thread, EventIndex triggering_ei)
     LOG_MISC(("Begin initialize()"));
     currentSessionID = 0;
     initComplete = JNI_FALSE;
+    VMInitComplete = JNI_FALSE;
 
     if ( gdata->vmDead ) {
         EXIT_ERROR(AGENT_ERROR_INTERNAL,"VM dead at initialize() time");
@@ -779,6 +839,7 @@ debugInit_reset(JNIEnv *env)
 
     currentSessionID++;
     initComplete = JNI_FALSE;
+    VMInitComplete = JNI_TRUE; /* The VM Is already initialized */
 
     eventHandler_reset(currentSessionID);
     transport_reset();
