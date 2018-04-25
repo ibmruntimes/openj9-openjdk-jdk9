@@ -192,19 +192,32 @@ AC_DEFUN([OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU],
 
 AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
 [
+  AC_ARG_WITH(noncompressedrefs, [AS_HELP_STRING([--with-noncompressedrefs],
+      [build non-compressedrefs vm (large heap)])])
+
   # When compiling natively host_cpu and build_cpu are the same. But when
   # cross compiling we need to work with the host_cpu (which is where the final
   # JVM will run).
   OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU($host_cpu)
-  OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
-  OPENJ9_LIBS_SUBDIR=compressedrefs
+  
+  if test "x$with_noncompressedrefs" = x; then
+    OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}_cmprssptrs"
+    OPENJ9_LIBS_SUBDIR=compressedrefs
+  else 
+    OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_${OPENJ9_CPU}"
+    OPENJ9_LIBS_SUBDIR=default
+  fi
 
   if test "x$OPENJ9_CPU" = xx86-64; then
     if test "x$OPENJDK_BUILD_OS" = xlinux; then
       OPENJ9_PLATFORM_CODE=xa64
     elif test "x$OPENJDK_BUILD_OS" = xwindows; then
       OPENJ9_PLATFORM_CODE=wa64
-      OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+      if test "x$OPENJ9_LIBS_SUBDIR" = xdefault; then
+        OPENJ9_BUILDSPEC="win_x86-64"
+      else
+        OPENJ9_BUILDSPEC="win_x86-64_cmprssptrs"
+      fi
     elif test "x$OPENJDK_BUILD_OS" = xmacosx; then
       OPENJ9_PLATFORM_CODE=oa64
       OPENJ9_BUILDSPEC="osx_x86-64"
@@ -213,7 +226,11 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
     fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
-    OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
+    if test "x$OPENJ9_LIBS_SUBDIR" = xdefault; then
+      OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_le_gcc"
+    else
+      OPENJ9_BUILDSPEC="${OPENJDK_BUILD_OS}_ppc-64_cmprssptrs_le_gcc"
+    fi
   elif test "x$OPENJ9_CPU" = x390-64; then
     OPENJ9_PLATFORM_CODE=xz64
   elif test "x$OPENJ9_CPU" = xppc-64; then
