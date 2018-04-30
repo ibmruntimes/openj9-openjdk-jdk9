@@ -120,6 +120,11 @@ ifeq (false,$(WARNINGS_AS_ERRORS))
   OMR_EXTRA_CONFIGURE_ARGS := --disable-warnings-as-errors
 endif
 
+ifneq (,$(CCACHE))
+  export UMA_CCACHE:=1
+  export CCACHE
+endif
+
 ifeq (windows,$(OPENJDK_TARGET_OS))
   # set Visual Studio environment
   # wrap PATH in quotes as it contains spaces (unix path)
