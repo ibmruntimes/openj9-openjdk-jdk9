@@ -4,3 +4,7 @@
 /openj9
 # exclude optional eclipse project file
 /.project
+
+# ignore derived artifacts created when configure option '--with-freetype-src' is used
+/freetype.bat
+/freetype.log
