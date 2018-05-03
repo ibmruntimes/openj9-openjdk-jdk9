@@ -5224,7 +5224,6 @@ VS_SDK_PLATFORM_NAME_2013=
 # ===========================================================================
 # (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
 # ===========================================================================
-#
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
 # published by the Free Software Foundation.
@@ -5237,7 +5236,6 @@ VS_SDK_PLATFORM_NAME_2013=
 #
 # You should have received a copy of the GNU General Public License version
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
-#
 # ===========================================================================
 
 
@@ -5264,7 +5262,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1524839395
+DATE_WHEN_GENERATED=1525097308
 
 ###############################################################################
 #
@@ -17692,7 +17690,7 @@ $as_echo "no (explicitly disabled)" >&6; }
     OPENJ9_ENABLE_DDR=false
   elif test "x$enable_ddr" = x ; then
     case "$OPENJ9_PLATFORM_CODE" in
-      xa64|xl64|xz64)
+      wa64|xa64|xl64|xz64)
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (default for $OPENJ9_PLATFORM_CODE)" >&5
 $as_echo "yes (default for $OPENJ9_PLATFORM_CODE)" >&6; }
         OPENJ9_ENABLE_DDR=true
