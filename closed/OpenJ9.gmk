@@ -376,7 +376,7 @@ run-preprocessors-j9 : stage-j9 \
 		&& cd $(OUTPUT_ROOT)/vm \
 		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
-			CMAKE=$(CMAKE) $(if $(findstring true,$(OPENJ9_ENABLE_CMAKE)),ENABLE_CMAKE=true CALLED_BY_SOURCE_ZIP=yes) \
+			CMAKE=$(CMAKE) \
 			EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
 			FREEMARKER_JAR="$(FREEMARKER_JAR)" \
 			J9VM_SHA=$(OPENJ9_SHA) \
