@@ -19,28 +19,25 @@ CLEAN_DIRS += vm
 
 .PHONY : \
 	j9vm-build \
-	j9vm-compose-buildjvm \
 	openj9-jdk-image \
 	openj9-jre-image \
+	java.base-libs \
 	#
 
-j9vm-build :
-	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR) build-j9)
+OPENJ9_MAKE := $(MAKE) -f $(SRC_ROOT)/closed/OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR)
 
-j9vm-compose-buildjvm : j9vm-build
-ifeq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
-	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) stage_openj9_build_jdk)
-else
-	@$(ECHO) Cross compile detected, skipping stage_openj9_build_jdk
-endif
+java.base-libs : java.base-copy j9vm-build
+
+j9vm-build : buildtools-langtools
+	+$(OPENJ9_MAKE) openj9_build_jdk
 
 product-images : openj9-jdk-image openj9-jre-image
 
 openj9-jdk-image : jdk-image j9vm-build
-	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) stage_openj9_jdk_image)
+	+$(OPENJ9_MAKE) openj9_jdk_image
 
 openj9-jre-image : jre-image j9vm-build
-	+($(CD) $(SRC_ROOT)/closed && $(MAKE) -f OpenJ9.gmk SPEC=$(SPEC) stage_openj9_jre_image)
+	+$(OPENJ9_MAKE) openj9_jre_image
 
 ifeq (true,$(OPENJ9_ENABLE_DDR))
 

@@ -142,6 +142,7 @@ endif
 	clean-j9 \
 	clean-j9-dist \
 	generate-j9jcl-sources \
+	openj9_build_jdk \
 	run-preprocessors-j9 \
 	stage-j9 \
 	stage-openj9-tools \
@@ -150,69 +151,60 @@ endif
 
 # generated_target_rules_build
 # ----------------------------
-# param 1 = The jdk/jre directory name
+# param 1 = The make goal
 # param 2 = The jdk/jre directory to add openj9 content
 define generated_target_rules_build
 
-.PHONY : stage_openj9_$1
+.PHONY : $1
 
 $(foreach file,$(OPENJ9_ALT_SHARED_LIBRARIES) $(OPENJ9_BUILD_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_NOTICE_FILES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(file),$(SRC_ROOT)/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(file),$(SRC_ROOT)/$(file))))
 
 $(foreach file,$(OPENJ9_REDIRECTOR), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/java.base/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$(MODULES_LIBS_DIR)/java.base/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/openj9.sharedclasses/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$(MODULES_LIBS_DIR)/openj9.sharedclasses/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_MANAGEMENT_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$(MODULES_LIBS_DIR)/java.management/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$(MODULES_LIBS_DIR)/java.management/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 endef
 
 # generated_target_rules
 # ----------------------
-# param 1 = The jdk/jre directory name
+# param 1 = The make goal
 # param 2 = The jdk/jre directory to add openj9 content
 define generated_target_rules
 
-.PHONY : stage_openj9_$1
+.PHONY : $1
 
 $(foreach file,$(OPENJ9_SHARED_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_MISC_FILES) $(OPENJ9_PROPERTY_FILES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/lib/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_NOTICE_FILES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(file),$(SRC_ROOT)/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(file),$(SRC_ROOT)/$(file))))
 
 $(foreach file,$(OPENJ9_REDIRECTOR), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
-
-ifneq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
-
-# For cross compiles we need some extra libraries defined for use in the generated target rules section.
-# These are libraries that would normally be copied as part of the build jdk rules, but that section is currently
-# not active during cross compilation. Once we have a working build jdk as part of the build it will probably be possible
-# to remove these declarations.
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_JAVA_BASE_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(notdir $(file)),$(OUTPUT_ROOT)/vm/$(file))))
 
 $(foreach file,$(OPENJ9_SHARED_CLASSES_LIBRARIES), \
-	$(eval $(call openj9_copy_prereq,stage_openj9_$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
-
-endif # cross compile
+	$(eval $(call openj9_copy_prereq,$1,$2/$(OPENJ9_LIBS_OUTPUT_DIR)/$(OPENJ9_LIBS_SUBDIR)/$(file),$(OUTPUT_ROOT)/vm/$(file))))
 
 endef
 
@@ -238,21 +230,25 @@ endef
 
 OPENJ9_MARKER_FILE := .up-to-date
 
-# Use '-m' / '--touch' to avoid file modification times (`-m` works with older tar tools).
+# Use '-m' / '--touch' to avoid file modification times ('-m' works with older tar implementations).
 define openj9_copy_tree_impl
 	@$(MKDIR) -p $1
 	@$(TAR) --create --directory=$2 $(if $(wildcard $1/$(OPENJ9_MARKER_FILE)),--newer=$1/$(OPENJ9_MARKER_FILE)) --exclude-vcs . | $(TAR) --extract --directory=$1 -m
 	@$(TOUCH) $1/$(OPENJ9_MARKER_FILE)
 endef
 
-# Temporary fix until we work out how to handle the build_jdk for cross compiles
-ifeq ($(OPENJDK_BUILD_CPU),$(OPENJDK_TARGET_CPU))
-  $(eval $(call generated_target_rules_build,build_jdk,$(BUILD_JDK)))
-else
-  $(info Cross compilation detected, skipping generated_target_rules_build)
+openj9_build_jdk : build-j9
+ifeq ($(BUILD_JDK),$(JDK_OUTPUTDIR))
+	+$(MAKE) -f $(SRC_ROOT)/closed/OpenJ9.gmk create_build_jdk
 endif
-$(eval $(call generated_target_rules,jdk_image,$(JDK_IMAGE_DIR)))
-$(eval $(call generated_target_rules,jre_image,$(JRE_IMAGE_DIR)))
+
+# If we weren't given a BUILD_JDK, we must create one.
+ifeq ($(BUILD_JDK),$(JDK_OUTPUTDIR))
+  $(eval $(call generated_target_rules_build,create_build_jdk,$(JDK_OUTPUTDIR)))
+endif
+
+$(eval $(call generated_target_rules,openj9_jdk_image,$(JDK_IMAGE_DIR)))
+$(eval $(call generated_target_rules,openj9_jre_image,$(JRE_IMAGE_DIR)))
 
 # Comments for stage-j9
 # Currently there is a staged location where j9 is built.  This is due to a number of reasons:
@@ -314,9 +310,8 @@ stage-openj9-tools :
 
 build-openj9-tools : stage-openj9-tools
 	@$(ECHO) Building OpenJ9 tools
-	($(MAKE) $(MAKEFLAGS) -C $(OUTPUT_ROOT)/vm/sourcetools -f buildj9tools.mk \
-		JAVA_HOME=$(BOOT_JDK) lib/jpp.jar \
-	)
+	$(MAKE) -C $(OUTPUT_ROOT)/vm/sourcetools $(MAKEFLAGS) -f buildj9tools.mk \
+		JAVA_HOME=$(BOOT_JDK) lib/jpp.jar
 
 stage-j9 : stage-openj9-tools
 	@$(ECHO) Staging OpenJ9 debugtools in $(OUTPUT_ROOT)/vm
@@ -372,9 +367,8 @@ run-preprocessors-j9 : stage-j9 \
 		$(OUTPUT_ROOT)/vm/compiler/jit.version \
 		$(OUTPUT_ROOT)/vm/include/openj9_version_info.h
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
-	(export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
-		&& cd $(OUTPUT_ROOT)/vm \
-		&& $(MAKE) $(MAKEFLAGS) -f buildtools.mk \
+	export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
+		&& $(MAKE) -C $(OUTPUT_ROOT)/vm $(MAKEFLAGS) -f buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
 			CMAKE=$(CMAKE) \
 			EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
@@ -385,21 +379,16 @@ run-preprocessors-j9 : stage-j9 \
 			OPENJ9_BUILD=true \
 			SPEC=$(OPENJ9_BUILDSPEC) \
 			UMA_OPTIONS_EXTRA="-buildDate $(shell date +'%Y%m%d')" \
-			tools \
-	)
+			tools
 
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUT_ROOT)/vm
 ifeq (true,$(OPENJ9_ENABLE_CMAKE))
-	(export OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) \
-		&& cd $(OUTPUT_ROOT)/vm/build \
-		&& $(MAKE) $(MAKEFLAGS) install \
-	)
+	export OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) \
+		&& $(MAKE) -C $(OUTPUT_ROOT)/vm/build $(MAKEFLAGS) install
 else
-	(export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) $(EXPORT_MSVS_ENV_VARS) \
-		&& cd $(OUTPUT_ROOT)/vm \
-		&& $(MAKE) $(MAKEFLAGS) all \
-	)
+	export OPENJ9_BUILD=true $(EXPORT_NO_USE_MINGW) $(EXPORT_MSVS_ENV_VARS) \
+		&& $(MAKE) -C $(OUTPUT_ROOT)/vm $(MAKEFLAGS) all
 endif
 	@$(ECHO) OpenJ9 compile complete
 
@@ -455,7 +444,7 @@ $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 generate-j9jcl-sources : $(J9JCL_SOURCES_DONEFILE)
 
 clean-j9 : clean-openj9-thirdparty-binaries
-	(cd $(OUTPUT_ROOT)/vm && $(MAKE) clean)
+	$(MAKE) -C $(OUTPUT_ROOT)/vm clean
 
 clean-j9-dist : clean-openj9-thirdparty-binaries
 	$(RM) -fdr $(OUTPUT_ROOT)/vm

@@ -1,5 +1,5 @@
 #
-# (c) Copyright IBM Corp. 2011, 2017 All Rights Reserved
+# (c) Copyright IBM Corp. 2011, 2018 All Rights Reserved
 #
 # Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -701,7 +701,7 @@ else
   endif
 
   # Building java.base-jmod requires all of hotspot to be built.
-  java.base-jmod: j9vm-compose-buildjvm
+  java.base-jmod: j9vm-build
 
   # Declare dependencies from <module>-jmod to all other module targets
   # When creating a BUILDJDK, the java compilation has already been done by the
@@ -727,7 +727,7 @@ else
   # in java.base-copy) and tzdb.dat (done in java.base-gendata) to the
   # appropriate location otherwise jimage, jlink and jmod won't start. This
   # also applies when creating the buildjdk.
-  DEFAULT_JMOD_DEPS := j9vm-compose-buildjvm java.base-libs java.base-copy java.base-gendata \
+  DEFAULT_JMOD_DEPS := java.base-libs java.base-copy java.base-gendata \
       jdk.jlink-launchers
   # When cross compiling and buildjdk is to be created, depend on creating the
   # buildjdk instead of the default dependencies.
@@ -787,7 +787,7 @@ else
   # populated (java, copy and gendata targets) and the basic libs and launchers
   # have been built.
   exploded-image-optimize: java copy gendata java.base-libs java.base-launchers \
-      buildtools-modules j9vm-build 
+      buildtools-modules
 
   bootcycle-images: jdk-image
 
@@ -922,8 +922,6 @@ ifneq ($(COMPILE_TYPE), cross)
   exploded-image: exploded-image-optimize
 endif
 
-j9vm-build: buildtools-langtools 
-java.base-libs: j9vm-build
 create-buildjdk: create-buildjdk-copy create-buildjdk-interim-image
 
 docs-jdk-api: docs-jdk-api-javadoc
