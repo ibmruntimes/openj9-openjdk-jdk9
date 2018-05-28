@@ -439,7 +439,7 @@ cbEarlyVMInit(jvmtiEnv *jvmti_env, JNIEnv *env, jthread thread)
     }
     if (initOnStartup) {
         initialize(env, thread, EI_VM_INIT);
-    }
+}
     vmInitialized = JNI_TRUE;
     LOG_MISC(("END cbEarlyVMInit"));
 }
@@ -633,6 +633,15 @@ signalVMInitComplete(void)
 }
 
 /*
+ * Determine if VM initialization is complete.
+ */
+jboolean
+debugInit_isVMInitComplete(void)
+{
+    return VMInitComplete;
+}
+
+/*
  * Wait for VM initialization to complete.
  */
 void
@@ -810,6 +819,7 @@ debugInit_reset(JNIEnv *env)
 
     currentSessionID++;
     initComplete = JNI_FALSE;
+    VMInitComplete = JNI_TRUE; /* The VM Is already initialized */
 
     eventHandler_reset(currentSessionID);
     transport_reset();
