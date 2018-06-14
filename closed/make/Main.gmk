@@ -24,7 +24,7 @@ CLEAN_DIRS += vm
 	java.base-libs \
 	#
 
-OPENJ9_MAKE := $(MAKE) -f $(SRC_ROOT)/closed/OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR)
+OPENJ9_MAKE := $(MAKE) -f $(SRC_ROOT)/closed/OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR) OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS)
 
 java.base-libs : java.base-copy j9vm-build
 
