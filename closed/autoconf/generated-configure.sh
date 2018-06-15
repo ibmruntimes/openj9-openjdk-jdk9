@@ -977,6 +977,7 @@ COMPILER_VERSION_STRING
 OPENJ9_PLATFORM_CODE
 OPENJ9_BUILDSPEC
 M4
+CONFIG_SHELL
 OPENJ9_TOPDIR
 OPENJ9OMR_TOPDIR
 JVM_VARIANT_MAIN
@@ -5262,7 +5263,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1525097308
+DATE_WHEN_GENERATED=1529096657
 
 ###############################################################################
 #
