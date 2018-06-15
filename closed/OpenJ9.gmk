@@ -269,8 +269,18 @@ else
   FEATURE_SED_SCRIPT := $(call SedDisable,opt_cuda)
 endif
 
-# Adjust .spec files replacing references to gcc-4.6. Openjdk requires 4.8.2 or newer.
-SPEC_SED_SCRIPT := -e 's/gcc-4.6/gcc/g'
+# Function to generate sed program fragment.
+# $1 - name of make macro to use instead of a hard-coded tool reference.
+# $2 - suffix of uma_make_cmd property name to be adjusted.
+SedUmaCommand = -e '/<property name="uma_make_cmd_$(strip $2)"/s|value="[^"]*"|value="$($(strip $1))"|'
+
+# Copy configured values to relevant UMA properties in .spec files.
+SPEC_SED_SCRIPT := \
+	$(call SedUmaCommand, CC,  cc) \
+	$(call SedUmaCommand, CXX, cxx) \
+	$(call SedUmaCommand, CXX, interp_gcc) \
+	$(call SedUmaCommand, CXX, ppc_gcc_cxx) \
+	#
 
 # Adjust DDR enablement flags.
 ifeq (true,$(OPENJ9_ENABLE_DDR))
