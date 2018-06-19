@@ -32,5 +32,7 @@
 #define OPENJDK_TAG               "@OPENJDK_TAG@"
 #define J9JVM_VERSION_STRING      "@OPENJ9_VERSION_STRING@"
 #define OPENJ9_TAG                "@OPENJ9_TAG@"
+#define J9JDK_EXT_VERSION         "@J9JDK_EXT_VERSION@"
+#define J9JDK_EXT_NAME            "@J9JDK_EXT_NAME@"
 
 #endif /* OPENJ9_VERSION_INFO_H */

@@ -34,6 +34,9 @@ endef
 OPENJ9_TOPDIR           := @OPENJ9_TOPDIR@
 OPENJ9OMR_TOPDIR        := @OPENJ9OMR_TOPDIR@
 
+J9JDK_EXT_VERSION       := 9.0.0.1
+J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
+
 # CUDA
 OPENJ9_ENABLE_CUDA      := @OPENJ9_ENABLE_CUDA@
 ifneq (,@OPENJ9_CUDA_HOME@)
