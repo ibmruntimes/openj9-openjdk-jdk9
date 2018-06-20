@@ -5263,7 +5263,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1529096657
+DATE_WHEN_GENERATED=1537309530
 
 ###############################################################################
 #
@@ -17182,7 +17182,7 @@ fi
       OPENJ9_PLATFORM_CODE=oa64
       OPENJ9_BUILDSPEC="osx_x86-64"
     else
-      as_fn_error $? "Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!" "$LINENO" 5
+      as_fn_error $? "Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}!" "$LINENO" 5
     fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
@@ -17200,7 +17200,7 @@ fi
     OPENJ9_BUILDSPEC=linux_arm_linaro
     OPENJ9_LIBS_SUBDIR=default
   else
-    as_fn_error $? "Unsupported OpenJ9 cpu ${OPENJ9_CPU}, contact support team!" "$LINENO" 5
+    as_fn_error $? "Unsupported OpenJ9 cpu ${OPENJ9_CPU}!" "$LINENO" 5
   fi
 
 
@@ -17210,7 +17210,7 @@ fi
 
 
   OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
-  LAST_TAGGED_SHA=`git -C $SRC_ROOT rev-list --tags="jdk-9*" --max-count=1 2>/dev/null`
+  LAST_TAGGED_SHA=`git -C $SRC_ROOT rev-list --tags="jdk-9*" --topo-order --max-count=1 2>/dev/null`
   if test "x$LAST_TAGGED_SHA" != x; then
     OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "$LAST_TAGGED_SHA"`
   else
@@ -17341,6 +17341,7 @@ $as_echo "no" >&6; }
   if ! test -d "$OPENJ9OMR_TOPDIR" ; then
     as_fn_error $? "\"Cannot locate the path to OMR sources: $OPENJ9OMR_TOPDIR! Try 'bash get_source.sh' and restart configure\"" "$LINENO" 5
   fi
+
 
 
 
@@ -17691,7 +17692,7 @@ $as_echo "no (explicitly disabled)" >&6; }
     OPENJ9_ENABLE_DDR=false
   elif test "x$enable_ddr" = x ; then
     case "$OPENJ9_PLATFORM_CODE" in
-      wa64|xa64|xl64|xz64)
+      ap64|wa64|xa64|xl64|xz64)
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (default for $OPENJ9_PLATFORM_CODE)" >&5
 $as_echo "yes (default for $OPENJ9_PLATFORM_CODE)" >&6; }
         OPENJ9_ENABLE_DDR=true
