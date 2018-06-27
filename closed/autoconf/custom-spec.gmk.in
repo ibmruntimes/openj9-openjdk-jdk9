@@ -67,8 +67,11 @@ OPENJ9_PLATFORM_CODE    := @OPENJ9_PLATFORM_CODE@
 
 OPENJ9_LIBS_SUBDIR      := @OPENJ9_LIBS_SUBDIR@
 
-# Shell to configure OMR
-export CONFIG_SHELL     := @CONFIG_SHELL@
+# Export autoconf cache variables for CC/CXX
+# This is for the case where ccache is enabled
+# It ensures that OMR autoconf uses the compiler, not ccache
+export ac_cv_prog_CC    := @CC@
+export ac_cv_prog_CXX   := @CXX@
 
 ifeq ($(OPENJDK_TARGET_OS), windows)
   # Set environment variables for Microsoft Visual Studio toolchain.
