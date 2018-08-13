@@ -221,7 +221,7 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
       OPENJ9_PLATFORM_CODE=oa64
       OPENJ9_BUILDSPEC="osx_x86-64"
     else
-      AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}, contact support team!])
+      AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}!])
     fi
   elif test "x$OPENJ9_CPU" = xppc-64_le; then
     OPENJ9_PLATFORM_CODE=xl64
@@ -239,7 +239,7 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
     OPENJ9_BUILDSPEC=linux_arm_linaro
     OPENJ9_LIBS_SUBDIR=default
   else
-    AC_MSG_ERROR([Unsupported OpenJ9 cpu ${OPENJ9_CPU}, contact support team!])
+    AC_MSG_ERROR([Unsupported OpenJ9 cpu ${OPENJ9_CPU}!])
   fi
 
   AC_SUBST(OPENJ9_BUILDSPEC)
@@ -251,7 +251,7 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
 AC_DEFUN_ONCE([OPENJDK_VERSION_DETAILS],
 [
   OPENJDK_SHA=`git -C $SRC_ROOT rev-parse --short HEAD`
-  LAST_TAGGED_SHA=`git -C $SRC_ROOT rev-list --tags="jdk-9*" --max-count=1 2>/dev/null`
+  LAST_TAGGED_SHA=`git -C $SRC_ROOT rev-list --tags="jdk-9*" --topo-order --max-count=1 2>/dev/null`
   if test "x$LAST_TAGGED_SHA" != x; then
     OPENJDK_TAG=`git -C $SRC_ROOT describe --tags "$LAST_TAGGED_SHA"`
   else
