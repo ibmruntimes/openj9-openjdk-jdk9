@@ -249,10 +249,11 @@ endef
 
 OPENJ9_MARKER_FILE := .up-to-date
 
-# Use '-m' / '--touch' to avoid file modification times ('-m' works with older tar implementations).
+# Use '-m' to update file modification times ('-m' is equivalent to '--touch' in some implementations of tar).
 define openj9_copy_tree_impl
 	@$(MKDIR) -p $1
-	@$(TAR) --create --directory=$2 $(if $(wildcard $1/$(OPENJ9_MARKER_FILE)),--newer=$1/$(OPENJ9_MARKER_FILE)) --exclude-vcs . | $(TAR) --extract --directory=$1 -m
+	@$(TAR) --create --directory=$2 $(if $(wildcard $1/$(OPENJ9_MARKER_FILE)),--newer=$1/$(OPENJ9_MARKER_FILE)) --exclude=.git . \
+		| $(TAR) --extract --directory=$1 -m
 	@$(TOUCH) $1/$(OPENJ9_MARKER_FILE)
 endef
 
