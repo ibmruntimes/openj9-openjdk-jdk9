@@ -76,3 +76,10 @@ ifeq ($(OPENJDK_TARGET_OS), windows)
   export INCLUDE := "@VS_INCLUDE@"
   export LIB := "@VS_LIB@"
 endif
+
+ifeq ($(OPENJDK_BUILD_OS), macosx)
+  ifeq ($(OPENJ9_LIBS_SUBDIR), compressedrefs)
+    # Set page zero size to 4KB for mapping memory below 4GB.
+    LDFLAGS_JDKEXE += -pagezero_size 0x1000
+  endif
+endif
