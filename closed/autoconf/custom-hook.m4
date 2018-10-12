@@ -219,7 +219,11 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
       fi
     elif test "x$OPENJDK_BUILD_OS" = xmacosx; then
       OPENJ9_PLATFORM_CODE=oa64
-      OPENJ9_BUILDSPEC="osx_x86-64"
+      if test "x$OPENJ9_LIBS_SUBDIR" = xdefault; then
+        OPENJ9_BUILDSPEC="osx_x86-64"
+      else
+        OPENJ9_BUILDSPEC="osx_x86-64_cmprssptrs"
+      fi
     else
       AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}!])
     fi

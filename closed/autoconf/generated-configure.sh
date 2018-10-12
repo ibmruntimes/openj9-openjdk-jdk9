@@ -5263,7 +5263,7 @@ VS_SDK_PLATFORM_NAME_2013=
 
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1537309530
+DATE_WHEN_GENERATED=1539281886
 
 ###############################################################################
 #
@@ -17180,7 +17180,11 @@ fi
       fi
     elif test "x$OPENJDK_BUILD_OS" = xmacosx; then
       OPENJ9_PLATFORM_CODE=oa64
-      OPENJ9_BUILDSPEC="osx_x86-64"
+      if test "x$OPENJ9_LIBS_SUBDIR" = xdefault; then
+        OPENJ9_BUILDSPEC="osx_x86-64"
+      else
+        OPENJ9_BUILDSPEC="osx_x86-64_cmprssptrs"
+      fi
     else
       as_fn_error $? "Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}!" "$LINENO" 5
     fi
