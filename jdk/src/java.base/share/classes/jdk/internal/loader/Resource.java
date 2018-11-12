@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 1998, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 1998, 2009, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -69,7 +75,24 @@ public abstract class Resource {
      */
     public abstract int getContentLength() throws IOException;
 
-    private InputStream cis;
+   private InputStream cis;                                                     //IBM-shared_classes_misc
+    /* Stores the classpath index from which this resource was loaded from - used for Shared class support */ //IBM-shared_classes_misc
+    private int classPathLoadIndex;                                             //IBM-shared_classes_misc
+                                                                                //IBM-shared_classes_misc
+    /*                                                                          //IBM-shared_classes_misc
+     * Sets the classpath index from which this resource was loaded from        //IBM-shared_classes_misc
+     */                                                                         //IBM-shared_classes_misc
+    public void setClasspathLoadIndex(int cpIndex) {                            //IBM-shared_classes_misc
+        classPathLoadIndex = cpIndex;                                           //IBM-shared_classes_misc
+    }                                                                           //IBM-shared_classes_misc
+                                                                                //IBM-shared_classes_misc
+    /*                                                                          //IBM-shared_classes_misc
+     * Returns the classpath index from which this resource was loaded from     //IBM-shared_classes_misc
+     */                                                                         //IBM-shared_classes_misc
+    public int getClasspathLoadIndex() {                                        //IBM-shared_classes_misc
+        return classPathLoadIndex;                                              //IBM-shared_classes_misc
+    }                                                                           //IBM-shared_classes_misc
+                                                                                //IBM-shared_classes_misc
 
     /* Cache result in case getBytes is called after getByteBuffer. */
     private synchronized InputStream cachedInputStream() throws IOException {
@@ -186,3 +209,4 @@ public abstract class Resource {
         return null;
     }
 }
+//IBM-shared_classes_misc

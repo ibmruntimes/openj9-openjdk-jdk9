@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 1996, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 1996, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -54,8 +60,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+
+import com.ibm.sharedclasses.spi.SharedClassProvider;
+
 import sun.reflect.misc.ReflectUtil;
 import sun.rmi.runtime.Log;
 
@@ -1003,7 +1013,17 @@ public final class LoaderHandler {
 
         // createClassLoader permission needed to create loader in context
         perms.add(new RuntimePermission("createClassLoader"));
-
+        // allow the applet classloader access to shared classes.               //IBM-shared_classes_misc
+        ServiceLoader<SharedClassProvider> sl = ServiceLoader.load(SharedClassProvider.class); 											//IBM-shared_classes_misc
+		for (SharedClassProvider sharedClassServiceProvider : sl) {																		//IBM-shared_classes_misc
+			if (null != sharedClassServiceProvider) {																					//IBM-shared_classes_misc
+				if (sharedClassServiceProvider.isSharedClassEnabled()){																	//IBM-shared_classes_misc
+					perms.add(sharedClassServiceProvider.createPermission("sun.rmi.server.LoaderHandler$Loader", "read,write"));		//IBM-shared_classes_misc
+				}																														//IBM-shared_classes_misc
+				break;																													//IBM-shared_classes_misc
+			}																															//IBM-shared_classes_misc
+		}
+		
         // add permissions to read any "java.*" property
         perms.add(new java.util.PropertyPermission("java.*","read"));
 
@@ -1222,3 +1242,4 @@ public final class LoaderHandler {
     }
 
 }
+//IBM-shared_classes_misc

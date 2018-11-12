@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2003, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2003, 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -120,7 +126,11 @@ eventHandlerVMInit( jvmtiEnv *      jvmtienv,
                     JNIEnv *        jnienv,
                     jthread         thread);
 
-/* ClassFileLoadHook event handler. Installed during VMInit, then left in place forever. */
+/*
+ * ClassFileLoadHook event handler.
+ * Enabled when the first transformer is added;
+ * Disabled when the last transformer is removed.
+ */
 extern void JNICALL
 eventHandlerClassFileLoadHook(  jvmtiEnv *              jvmtienv,
                                 JNIEnv *                jnienv,
@@ -239,6 +249,9 @@ isModifiableClass(JNIEnv * jnienv, JPLISAgent * agent, jclass clazz);
 
 extern jboolean
 isRetransformClassesSupported(JNIEnv * jnienv, JPLISAgent * agent);
+
+extern void
+setHasTransformers(JNIEnv * jnienv, JPLISAgent * agent, jboolean has);
 
 extern void
 setHasRetransformableTransformers(JNIEnv * jnienv, JPLISAgent * agent, jboolean has);

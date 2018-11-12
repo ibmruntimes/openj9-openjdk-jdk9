@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2000, 2018 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -26,8 +32,8 @@
 package java.nio;
 
 import java.io.FileDescriptor;
+import java.lang.ref.Reference;
 import jdk.internal.misc.Unsafe;
-
 
 /**
  * A direct byte buffer whose content is a memory-mapped region of a file.
@@ -164,6 +170,7 @@ public abstract class MappedByteBuffer
         // is computed as we go along to prevent the compiler from otherwise
         // considering the loop as dead code.
         Unsafe unsafe = Unsafe.getUnsafe();
+        Reference.reachabilityFence(this);
         int ps = Bits.pageSize();
         int count = Bits.pageCount(length);
         long a = mappingAddress(offset);

@@ -1,3 +1,22 @@
+# ===========================================================================
+# (c) Copyright IBM Corp. 2017 All Rights Reserved
+# ===========================================================================
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.  
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
+# 
+# ===========================================================================
+
 data = R0x2000;
 text = LOAD ?RXO;
 # Test Null
@@ -11,7 +30,6 @@ text: .text%Java_java_lang_System_registerNatives;
 text: .text%Java_java_lang_Thread_registerNatives;
 text: .text%Java_java_security_AccessController_getStackAccessControlContext;
 text: .text%Java_java_security_AccessController_getInheritedAccessControlContext;
-text: .text%Java_java_lang_ClassLoader_registerNatives;
 text: .text%Java_java_security_AccessController_doPrivileged__Ljava_security_PrivilegedAction_2;
 text: .text%Java_java_lang_Class_registerNatives;
 text: .text%Java_java_lang_Class_getPrimitiveClass;
@@ -46,8 +64,6 @@ text: .text%JNU_ClassString;
 text: .text%JNU_CopyObjectArray;
 text: .text%Java_java_io_UnixFileSystem_canonicalize0;
 text: .text%Java_java_io_UnixFileSystem_getBooleanAttributes0;
-text: .text%Java_java_lang_ClassLoader_findLoadedClass0;
-text: .text%Java_java_lang_ClassLoader_findBootstrapClass;
 text: .text%Java_java_security_AccessController_doPrivileged__Ljava_security_PrivilegedExceptionAction_2Ljava_security_AccessControlContext_2;
 text: .text%Java_java_lang_System_mapLibraryName;
 text: .text%cpchars: OUTPUTDIR/System.o;
@@ -62,7 +78,6 @@ text: .text%Java_java_io_FileInputStream_readBytes;
 text: .text%readBytes;
 text: .text%Java_java_io_FileInputStream_close0;
 text: .text%Java_java_lang_Object_getClass;
-text: .text%Java_java_lang_ClassLoader_defineClass0;
 text: .text%VerifyClassCodes;
 # Test Exit
 text: .text%Java_java_lang_Shutdown_halt0;

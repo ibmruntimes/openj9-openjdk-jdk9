@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2003, 2017 All Rights Reserved
+#
 # Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -31,6 +33,7 @@ SUNWprivate_1.1 {
 	    Agent_OnAttach;
             Java_sun_instrument_InstrumentationImpl_isModifiableClass0;
             Java_sun_instrument_InstrumentationImpl_isRetransformClassesSupported0;
+            Java_sun_instrument_InstrumentationImpl_setHasTransformers;
             Java_sun_instrument_InstrumentationImpl_setHasRetransformableTransformers;
             Java_sun_instrument_InstrumentationImpl_retransformClasses0;
             Java_sun_instrument_InstrumentationImpl_getAllLoadedClasses0;

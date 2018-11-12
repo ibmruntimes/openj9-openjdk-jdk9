@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 1996, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Copyright (c) 1996, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -308,6 +314,32 @@ public class ObjectInputStream
     private ObjectInputFilter serialFilter;
 
     /**
+     * cache LUDCL (Latest User Defined Class Loader) till completion of
+     * read* requests
+     */
+
+      /* ClassCache Entry for caching class.forName results upon enableClassCaching */
+     private static final ClassCache classCache;
+     private static final boolean isClassCachingEnabled;
+     static {
+          isClassCachingEnabled =
+             AccessController.doPrivileged(new GetClassCachingSettingAction());
+         classCache = (isClassCachingEnabled ? new ClassCache() : null);
+     }
+  
+
+      /** if true LUDCL/forName results would be cached, true by default starting Java8 */
+     private static final class GetClassCachingSettingAction
+     implements PrivilegedAction<Boolean> {
+ public Boolean run() {
+     String property =
+         System.getProperty("com.ibm.enableClassCaching", "true");
+     return property.equalsIgnoreCase("true");
+ }
+ }
+    private ClassLoader cachedLudcl;
+
+    /**
      * Creates an ObjectInputStream that reads from the specified InputStream.
      * A serialization stream header is read from the stream and verified.
      * This constructor will block until the corresponding ObjectOutputStream
@@ -412,8 +444,63 @@ public class ObjectInputStream
     public final Object readObject()
         throws IOException, ClassNotFoundException
     {
+        return readObjectImpl(null);
+    }
+
+    /**
+     * Refer PR102778/PR110962/PR111232:
+     * Whenever jit compiler encounters processing readObject() method
+     * it will replace the call with redirectedReadObject() method to improve
+     * the performance for custom serialisation. JIT provide the class loader through
+     * the caller parameter to avoid the stack walk through while calling
+     * latestUserDefinedLoader().
+     *
+     * @throws  ClassNotFoundException if the class of a serialized object
+     * 	   could not be found.
+     * @throws  IOException if an I/O error occurs.
+     *
+     */
+
+    private static Object redirectedReadObject(ObjectInputStream iStream, Class caller)
+            throws ClassNotFoundException, IOException
+    {
+        return iStream.readObjectImpl(caller);
+    }
+
+    /**
+     * Actual implementation of readObject method which fetches classloader using
+     * latestUserDefinedLoader() method if caller is null. If caller is not null which means
+     * jit passes the class loader info and hence avoids calling latestUserDefinedLoader()
+     * method call to improve the performance for custom serialisation.
+     *
+     * @throws  ClassNotFoundException if the class of a serialized object
+     *     could not be found.
+     * @throws  IOException if an I/O error occurs.
+     */
+    private Object readObjectImpl(Class caller)
+               throws ClassNotFoundException, IOException
+    {
+
         if (enableOverride) {
             return readObjectOverride();
+        }
+
+        ClassLoader oldCachedLudcl = null;
+	boolean setCached = false;
+	
+	if ((curContext == null) && (isClassCachingEnabled)) {
+            oldCachedLudcl = cachedLudcl;
+
+            // If caller is not provided, follow the standard path to get the cachedLudcl.
+            // Otherwise use the class loader provided by JIT as the cachedLudcl.
+
+            if (caller == null) {
+                 cachedLudcl = latestUserDefinedLoader();
+            }else{
+                 cachedLudcl = caller.getClassLoader();
+            }
+
+            setCached = true;
         }
 
         // if nested read, passHandle contains handle of enclosing object
@@ -432,6 +519,9 @@ public class ObjectInputStream
             return obj;
         } finally {
             passHandle = outerHandle;
+            if (setCached) {
+                cachedLudcl = oldCachedLudcl;
+            }
             if (closed && depth == 0) {
                 clear();
             }
@@ -511,6 +601,16 @@ public class ObjectInputStream
      * @since   1.4
      */
     public Object readUnshared() throws IOException, ClassNotFoundException {
+
+        ClassLoader oldCachedLudcl = null;
+        boolean setCached = false; 
+
+        if ((curContext == null) && (isClassCachingEnabled)) {
+            oldCachedLudcl = cachedLudcl;
+            cachedLudcl = latestUserDefinedLoader();
+            setCached = true;
+        }
+
         // if nested read, passHandle contains handle of enclosing object
         int outerHandle = passHandle;
         try {
@@ -527,6 +627,9 @@ public class ObjectInputStream
             return obj;
         } finally {
             passHandle = outerHandle;
+            if (setCached) {
+                cachedLudcl = oldCachedLudcl;
+            }
             if (closed && depth == 0) {
                 clear();
             }
@@ -682,7 +785,10 @@ public class ObjectInputStream
     {
         String name = desc.getName();
         try {
-            return Class.forName(name, false, latestUserDefinedLoader());
+        	return ((classCache == null) ?
+        	        Class.forName(name, false, latestUserDefinedLoader()) :
+        	        classCache.get(name, cachedLudcl));
+           	
         } catch (ClassNotFoundException ex) {
             Class<?> cl = primClasses.get(name);
             if (cl != null) {

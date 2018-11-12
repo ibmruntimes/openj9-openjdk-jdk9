@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2011, 2017 All Rights Reserved
+#
 # Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -510,8 +512,14 @@ define SetupNativeCompilationBody
   $$(foreach d,$$($1_SRC), $$(if $$(wildcard $$d),, \
       $$(error SRC specified to SetupNativeCompilation $1 contains missing directory $$d)))
 
-  # Find all files in the source trees. Sort to remove duplicates.
-  $1_SRCS := $$(sort $$(call CacheFind,$$($1_SRC)))
+  # Find all files in the source trees. Use uniq to remove duplicates.
+  $1_SRCS := $$(call uniq, $$(foreach s, $$($1_SRC), $$(call CacheFind, $$(s))))
+  $1_SRCS := $$(strip $$(foreach s, $$($1_SRCS), \
+    $$(eval relative_src := $$(call remove-prefixes, $$($1_SRC), $$(s))) \
+    $$(if $$($1_$$(relative_src)), \
+      $$(eval $1_NATIVE_EXCLUDE_FILES += $$(s)), \
+      $$(eval $1_$$(relative_src) := 1) $$(s))))
+  $1_SRCS := $$(filter-out $$($1_NATIVE_EXCLUDE_FILES), $$($1_SRCS))
   $1_SRCS := $$(filter $$(NATIVE_SOURCE_EXTENSIONS), $$($1_SRCS))
   # Extract the C/C++ files.
   ifneq ($$($1_EXCLUDE_PATTERNS), )

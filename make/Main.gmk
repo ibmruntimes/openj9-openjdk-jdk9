@@ -1,4 +1,6 @@
 #
+# (c) Copyright IBM Corp. 2011, 2018 All Rights Reserved
+#
 # Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
@@ -625,7 +627,7 @@ else
   generate-exported-symbols: java.base-libs jdk.jdwp.agent-libs
 
   # Building one JVM variant is enough to start building the other libs
-  $(LIBS_TARGETS): hotspot-$(JVM_VARIANT_MAIN)-libs
+  $(LIBS_TARGETS): j9vm-build
 
   $(LAUNCHER_TARGETS): java.base-libs
 
@@ -699,7 +701,7 @@ else
   endif
 
   # Building java.base-jmod requires all of hotspot to be built.
-  java.base-jmod: hotspot
+  java.base-jmod: j9vm-build
 
   # Declare dependencies from <module>-jmod to all other module targets
   # When creating a BUILDJDK, the java compilation has already been done by the
@@ -864,7 +866,7 @@ endif
 # Virtual targets without recipes
 
 buildtools: buildtools-langtools interim-langtools interim-rmic \
-    buildtools-jdk buildtools-hotspot
+    buildtools-jdk
 
 hotspot: $(HOTSPOT_VARIANT_TARGETS) hotspot-jsig
 
@@ -907,7 +909,7 @@ $(foreach m, $(LAUNCHER_MODULES), $(eval $m: $m-launchers))
 $(foreach m, $(ALL_COPY_MODULES), $(eval $m: $m-copy))
 
 # Building java.base includes building all of hotspot.
-java.base: hotspot
+java.base: j9vm-build
 
 demos: demos-jdk
 
@@ -972,12 +974,14 @@ endif
 docs-image: docs-jdk
 
 # This target builds the test image
-test-image: prepare-test-image test-image-hotspot-jtreg-native \
-    test-image-jdk-jtreg-native test-image-failure-handler test-image-hotspot-gtest \
+test-image: prepare-test-image \
+    test-image-jdk-jtreg-native test-image-failure-handler \
     test-image-demos-jdk
 
+################################################################################
+
 # all-images builds all our deliverables as images.
-all-images: product-images test-image docs-image
+all-images: product-images test-image
 
 # all-bundles packages all our deliverables as tar.gz bundles.
 all-bundles: product-bundles test-bundles docs-bundles

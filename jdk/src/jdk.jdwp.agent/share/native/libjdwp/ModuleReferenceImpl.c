@@ -1,4 +1,10 @@
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2016, 2017 All Rights Reserved
+ * ===========================================================================
+ */
+ 
+ /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -57,7 +63,7 @@ getName(PacketInputStream *in, PacketOutputStream *out)
     }
     (void)outStream_writeString(out, name);
     if (name != NULL) {
-        jvmtiDeallocate(name);
+    	JNI_FUNC_PTR(env, ReleaseStringUTFChars)(env, namestr, name); 
     }
     return JNI_TRUE;
 }

@@ -1,0 +1,64 @@
+# ===========================================================================
+# (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+# ===========================================================================
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
+# ===========================================================================
+
+# The main target.
+all :
+
+ifeq (,$(wildcard $(SPEC)))
+  $(error BuildDDR.gmk needs SPEC set to a proper spec.gmk)
+endif
+
+include $(SPEC)
+include $(SRC_ROOT)/make/common/MakeBase.gmk
+include $(SRC_ROOT)/make/common/JavaCompilation.gmk
+include $(SRC_ROOT)/make/common/SetupJavaCompilers.gmk
+
+# Supporting definitions.
+DDR_CLASSES_BIN := $(SUPPORT_OUTPUTDIR)/ddr/classes
+
+# We depend upon class files from these modules.
+DDR_CLASSPATH := $(addprefix $(JDK_OUTPUTDIR)/modules/, \
+		java.base \
+		java.desktop \
+		openj9.dtfj \
+		openj9.traceformat \
+	)
+
+DDR_SRC_EXCLUDES := com/ibm/j9ddr/tools/ant
+
+ifeq (,$(filter mz31 mz64,$(OPENJ9_PLATFORM_CODE)))
+DDR_SRC_EXCLUDES += com/ibm/j9ddr/corereaders/tdump
+endif
+
+$(eval $(call SetupJavaCompilation,BUILD_DDR_CLASSES, \
+	SETUP := GENERATE_USINGJDKBYTECODE, \
+	BIN := $(DDR_CLASSES_BIN), \
+	CLASSPATH := $(DDR_CLASSPATH), \
+	SRC := $(OPENJ9_TOPDIR)/debugtools/DDR_VM/src, \
+	EXCLUDES := $(DDR_SRC_EXCLUDES), \
+	COPY := com/ibm/j9ddr/StructureAliases29.dat, \
+	))
+
+$(eval $(call SetupJarArchive,BUILD_DDR_JAR, \
+	DEPENDENCIES := $(BUILD_DDR_CLASSES), \
+	SRCS := $(DDR_CLASSES_BIN), \
+	SUFFIXES := .class .dat .properties, \
+	EXCLUDES := com/ibm/j9ddr/vm29/structure, \
+	JAR := $(call FindLibDirForModule, openj9.dtfj)/ddr/j9ddr.jar, \
+	))
+
+all : $(BUILD_DDR_JAR)

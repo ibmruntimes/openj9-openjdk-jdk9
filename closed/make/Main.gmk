@@ -1,0 +1,56 @@
+# ===========================================================================
+# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
+# ===========================================================================
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
+# ===========================================================================
+
+CLEAN_DIRS += vm
+
+.PHONY : \
+	j9vm-build \
+	openj9-jdk-image \
+	openj9-jre-image \
+	java.base-libs \
+	#
+
+OPENJ9_MAKE := $(MAKE) -f $(SRC_ROOT)/closed/OpenJ9.gmk SPEC=$(SPEC) VERSION_MAJOR=$(VERSION_MAJOR) OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS)
+
+java.base-libs : java.base-copy j9vm-build
+
+j9vm-build : buildtools-langtools
+	+$(OPENJ9_MAKE) openj9_build_jdk
+
+product-images : openj9-jdk-image openj9-jre-image
+
+openj9-jdk-image : jdk-image j9vm-build
+	+$(OPENJ9_MAKE) openj9_jdk_image
+
+openj9-jre-image : jre-image j9vm-build
+	+$(OPENJ9_MAKE) openj9_jre_image
+
+ifeq (true,$(OPENJ9_ENABLE_DDR))
+
+.PHONY : openj9.dtfj-ddr-gensrc openj9.dtfj-ddr-jar
+
+openj9.dtfj-ddr-gensrc : j9vm-build $(addsuffix -java, java.base java.desktop openj9.dtfj openj9.traceformat)
+	+$(MAKE) -f $(SRC_ROOT)/closed/make/DDR-gensrc.gmk SPEC=$(SPEC)
+
+openj9.dtfj-ddr-jar : openj9.dtfj-ddr-gensrc
+	+$(MAKE) -f $(SRC_ROOT)/closed/make/DDR-jar.gmk SPEC=$(SPEC)
+
+openj9.dtfj-jmod : openj9.dtfj-ddr-jar
+
+endif # OPENJ9_ENABLE_DDR
+
+ALL_TARGETS += openj9-jdk-image openj9-jre-image
