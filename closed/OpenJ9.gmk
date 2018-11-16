@@ -107,7 +107,7 @@ OPENJ9_MISC_FILES := \
 	#
 
 OPENJ9_NOTICE_FILES := openj9-notices.html
-OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX)
+OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 
 OPENJ9_DDR_FILES :=
 
@@ -434,9 +434,9 @@ endif
 	# jvm is required for compiling other java.base support natives
 	@$(ECHO) "Creating support/modules_libs/java.base/*/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) from J9 sources"
 	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/j9vm
-	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/server
-	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm_b156$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+	@$(CP) -p $(OUTPUT_ROOT)/vm/redirector/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 
 J9JCL_SOURCES_DONEFILE := $(MAKESUPPORT_OUTPUTDIR)/j9jcl_sources.done
 
