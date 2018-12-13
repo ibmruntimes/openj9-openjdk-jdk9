@@ -78,6 +78,14 @@ ifeq ($(OPENJDK_TARGET_OS), windows)
 endif
 
 ifeq ($(OPENJDK_BUILD_OS), macosx)
+  # MACOSX_DEPLOYMENT_TARGET acts similar to -mmacosx-version-min=version
+  # compiler option. If both the compiler option is specified and the
+  # environment variable is set, then the compiler option will take
+  # precedence. Here, MACOSX_DEPLOYMENT_TARGET environment variable and
+  # the compiler option will point to the same version. The environment
+  # variable is defined to support dependencies where the compiler option
+  # is not applied.
+  export MACOSX_DEPLOYMENT_TARGET := @MACOSX_VERSION_MIN@
   ifeq ($(OPENJ9_LIBS_SUBDIR), compressedrefs)
     # Set page zero size to 4KB for mapping memory below 4GB.
     LDFLAGS_JDKEXE += -pagezero_size 0x1000
